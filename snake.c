@@ -8,16 +8,16 @@
 // Numeric values
 #define MAX_FPS (int)60
 #define FIELD_SIZE (float)0.8
+#define SNAKE_SIZE (float)0.2
 // String literals
 #define TITLE (char *)"Snake"
 
 // Game entities
-typedef enum { UP = 0, DOWN, LEFT, RIGHT } DIRECTION;
+typedef enum { UP, DOWN, LEFT, RIGHT } DIRECTION;
 typedef struct Snake {
+    int size;
     Rectangle *head;
     Rectangle *tail;
-    float width;
-    float height;
     DIRECTION direction : 2; // 0, 1, 2, 3 (four directions)
 } Snake;
 
@@ -51,7 +51,7 @@ int main(void)
         // Set exit combination
         if (IsKeyDown(KEY_LEFT_ALT) && IsKeyDown(KEY_Q))
         {
-            CloseWindow();
+            break;
         }
 
         // Update state
