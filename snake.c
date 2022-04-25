@@ -2,18 +2,22 @@
 #include <stdio.h>
 
 /* Defines */
+
 // Colors
 #define DARK_MAMBA                                                             \
     (Color) { 139, 120, 143, 1 }
+
 // Numeric values
 #define MAX_FPS (int)60
 #define FIELD_SIZE (float)0.8
 #define SNAKE_SIZE (float)0.2
+
 // String literals
 #define TITLE (char *)"Snake"
 
 // Game entities
 typedef enum { UP, DOWN, LEFT, RIGHT } DIRECTION;
+
 typedef struct Snake {
     float size;
     Rectangle *head;
@@ -21,9 +25,17 @@ typedef struct Snake {
     DIRECTION direction : 2; // 0, 1, 2, 3 (four directions)
 } Snake;
 
+typedef struct Controls {
+    KeyboardKey snakeUp;
+    KeyboardKey snakeDown;
+    KeyboardKey snakeLeft;
+    KeyboardKey snakeRight;
+} Controls;
+
 // Function declarations
 void DrawSnake(Snake *snake);
 void UpdateSnake(Snake *snake);
+Controls InitControls(void);
 
 int main(void)
 {
@@ -42,7 +54,10 @@ int main(void)
     printf("----- %d\n", icon.format);
     SetWindowIcon(icon);
 
-    // Init game field
+    // Init controls
+    const Controls CONTROLS = InitControls();
+
+    // Init game field in the center of the screen
     Rectangle gameField = {0, 0, (float)SCREEN_W * FIELD_SIZE,
                            (float)SCREEN_H * FIELD_SIZE};
     gameField.x = (SCREEN_W - gameField.width) * 0.5f;
@@ -53,7 +68,7 @@ int main(void)
     Rectangle snakeBody0 = {gameField.x + gameField.width * 0.5,
                             gameField.y + gameField.height, snakeSize,
                             snakeSize};
-    Snake snake = {snakeSize, &snakeBody0, NULL, UP};
+    Snake snakePlayer = {snakeSize, &snakeBody0, NULL, UP};
 
     // Game loop
     while (!WindowShouldClose())
@@ -74,14 +89,21 @@ int main(void)
             gameField.x = (screenW - gameField.width) * 0.5f;
             gameField.y = (screenH - gameField.height) * 0.5f;
         }
+        // TODO: snake controls
+        // DIRECTION snakeDirection;
+        // switch (GetKeyPressed()) 
+        // {
+        // case KEY_UP:
+        //     break;
+        // }
 
         // Draw
         BeginDrawing();
 
         ClearBackground(DARK_MAMBA);
 
-        // Draw game field in the center of the screen
         DrawRectangleRec(gameField, GREEN);
+        DrawSnake(&snakePlayer);
 
         EndDrawing();
     }
@@ -97,17 +119,22 @@ void UpdateSnake(Snake *snake)
     switch (snake->direction)
     {
     case UP:
-        snake->tail->y -= snake->size;
+        snake->head->y -= snake->size;
         break;
     case DOWN:
-        snake->tail->y += snake->size;
+        snake->head->y += snake->size;
         break;
     case LEFT:
-        snake->tail->x -= snake->size;
+        snake->head->x -= snake->size;
         break;
     case RIGHT:
-        snake->tail->x += snake->size;
+        snake->head->x += snake->size;
         break;
     }
     return;
+}
+
+Controls InitControls(void)
+{
+    return (Controls){KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT};
 }
