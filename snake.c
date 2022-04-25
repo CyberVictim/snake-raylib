@@ -15,13 +15,15 @@
 // Game entities
 typedef enum { UP, DOWN, LEFT, RIGHT } DIRECTION;
 typedef struct Snake {
-    int size;
+    float size;
     Rectangle *head;
     Rectangle *tail;
     DIRECTION direction : 2; // 0, 1, 2, 3 (four directions)
 } Snake;
 
-// void update
+// Function declarations
+void DrawSnake(Snake *snake);
+void UpdateSnake(Snake *snake);
 
 int main(void)
 {
@@ -40,10 +42,18 @@ int main(void)
     printf("----- %d\n", icon.format);
     SetWindowIcon(icon);
 
+    // Init game field
     Rectangle gameField = {0, 0, (float)SCREEN_W * FIELD_SIZE,
                            (float)SCREEN_H * FIELD_SIZE};
     gameField.x = (SCREEN_W - gameField.width) * 0.5f;
     gameField.y = (SCREEN_H - gameField.height) * 0.5f;
+
+    // Init snake struct
+    float snakeSize = SNAKE_SIZE * gameField.width;
+    Rectangle snakeBody0 = {gameField.x + gameField.width * 0.5,
+                            gameField.y + gameField.height, snakeSize,
+                            snakeSize};
+    Snake snake = {snakeSize, &snakeBody0, NULL, UP};
 
     // Game loop
     while (!WindowShouldClose())
@@ -77,4 +87,27 @@ int main(void)
     }
     CloseWindow();
     return 0;
+}
+
+// Function implementations
+void DrawSnake(Snake *snake) { DrawRectangleRec(*snake->head, RED); }
+
+void UpdateSnake(Snake *snake)
+{
+    switch (snake->direction)
+    {
+    case UP:
+        snake->tail->y -= snake->size;
+        break;
+    case DOWN:
+        snake->tail->y += snake->size;
+        break;
+    case LEFT:
+        snake->tail->x -= snake->size;
+        break;
+    case RIGHT:
+        snake->tail->x += snake->size;
+        break;
+    }
+    return;
 }
