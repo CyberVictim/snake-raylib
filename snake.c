@@ -9,9 +9,9 @@
 
 // Numeric values
 #define MAX_FPS (int)60
-#define FIELD_SIZE (float)0.8
-#define SNAKE_SIZE (float)0.07
-#define SNAKE_SPEED (float)2.0
+#define FIELD_SIZE 0.8f
+#define SNAKE_SIZE 5
+#define SNAKE_SPEED 0.7f
 
 // String literals
 #define TITLE (char *)"Snake"
@@ -36,10 +36,11 @@ typedef struct Controls {
 
 // Function declarations
 void DrawSnake(Snake *snake);
-void UpdateSnake(Snake *snake, const float bounds[4]);
-Controls InitControls(void);
+void UpdateSnakePosition(Snake *snake, const float bounds[4]);
+void UpdateSnakeDirection(Snake *snake);
 void UpdateGameField(float screenW, float screenH, Rectangle *gameField);
 int GetBounds(Rectangle rec, float buf[4]);
+Controls InitControls(void);
 
 // Init controls
 Controls CONTROLS = {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT};
@@ -66,12 +67,15 @@ int main(void)
     UpdateGameField((float)SCREEN_W, (float)SCREEN_H, &gameField);
 
     // Init snake struct
-    float snakeSize = SNAKE_SIZE * gameField.width;
-    Rectangle snakeBody0 = {(gameField.x + gameField.width * 0.5) - snakeSize,
+    float snakeSize = SNAKE_SIZE * gameField.width * 0.01f;
+    Rectangle snakeBody0 = {(gameField.x + gameField.width * 0.5f) - snakeSize,
                             gameField.y + gameField.height - snakeSize,
                             snakeSize, snakeSize};
     Snake snakePlayer = {snakeSize, SNAKE_SPEED * snakeSize, &snakeBody0, NULL,
                          UP};
+
+    // Game loop outside vars
+    float dtSnake = 0.0f;
 
     // Game loop
     while (!WindowShouldClose())
@@ -92,9 +96,15 @@ int main(void)
         }
 
         // Update snakePlayer
-        float bounds[4];
-        GetBounds(gameField, bounds);
-        UpdateSnake(&snakePlayer, bounds);
+        dtSnake += GetFrameTime();
+        UpdateSnakeDirection(&snakePlayer);
+        if (dtSnake >= SNAKE_SPEED)
+        {
+            float bounds[4];
+            GetBounds(gameField, bounds);
+            UpdateSnakePosition(&snakePlayer, bounds);
+            dtSnake = 0.0f;
+        }
 
         /* --- Draw --- */
         BeginDrawing();
@@ -113,6 +123,7 @@ int main(void)
 // Function implementations
 void DrawSnake(Snake *snake) { DrawRectangleRec(*snake->head, RED); }
 
+// Relative to the screen
 void UpdateGameField(float screenW, float screenH, Rectangle *gameField)
 {
     gameField->width = (float)screenW * FIELD_SIZE;
@@ -132,9 +143,8 @@ int GetBounds(Rectangle rec, float buf[4])
     return 0;
 }
 
-void UpdateSnake(Snake *snake, const float bounds[4])
+void UpdateSnakeDirection(Snake *snake)
 {
-    // Get direction
     KeyboardKey pressedKey = GetKeyPressed();
     if (pressedKey)
     {
@@ -152,28 +162,30 @@ void UpdateSnake(Snake *snake, const float bounds[4])
             snake->direction = UP;
         }
     }
+}
 
-    // Update position
-    float dt = GetFrameTime();
+void UpdateSnakePosition(Snake *snake, const float bounds[4])
+{
+    // float dt = GetFrameTime();
     switch (snake->direction)
     {
     case UP:
-        snake->head->y -= snake->speed * dt;
+        snake->head->y -= snake->size;
         if (snake->head->y < bounds[1])
             snake->head->y = bounds[3] - snake->head->height;
         break;
     case DOWN:
-        snake->head->y += snake->speed * dt;
+        snake->head->y += snake->size;
         if ((snake->head->y + snake->head->height) > bounds[3])
             snake->head->y = bounds[1];
         break;
     case LEFT:
-        snake->head->x -= snake->speed * dt;
+        snake->head->x -= snake->size;
         if (snake->head->x < bounds[0])
             snake->head->x = bounds[2] - snake->head->width;
         break;
     case RIGHT:
-        snake->head->x += snake->speed * dt;
+        snake->head->x += snake->size;
         if ((snake->head->x + snake->head->width) > bounds[2])
             snake->head->x = bounds[0];
         break;
