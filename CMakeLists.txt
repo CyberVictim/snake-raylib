@@ -8,6 +8,7 @@ file(GLOB PROJECT_SOURCE_FILES CONFIGURE_DEPENDS *.c)
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_FILES})
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
+file(COPY resources/ DESTINATION resources/)
 
 # Web Configurations
 if (${PLATFORM} STREQUAL "Web")

@@ -10,7 +10,7 @@
 // Numeric values
 #define MAX_FPS (int)60
 #define FIELD_SIZE 0.8f
-#define SNAKE_SIZE 5
+#define SNAKE_SIZE 0.05f
 #define SNAKE_SPEED 0.7f
 
 // String literals
@@ -19,12 +19,17 @@
 // Game entities
 typedef enum { UP, DOWN, LEFT, RIGHT } DIRECTION;
 
+typedef struct SnakeBlock {
+    Rectangle *body;
+    struct SnakeBlock *next;
+} SnakeBlock;
+
 typedef struct Snake {
-    float size;
-    float speed;
-    Rectangle *head;
-    Rectangle *tail;
+    float blockSize;
+    SnakeBlock *head;
+    SnakeBlock *tail;
     DIRECTION direction : 3; // 0, 1, 2, 3 (four directions)
+    // SnakeBlock blocks[];
 } Snake;
 
 typedef struct Controls {
@@ -48,17 +53,17 @@ Controls CONTROLS = {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT};
 int main(void)
 {
     // Config setup
-    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
     // Init window
-    const int SCREEN_W = 1600;
-    const int SCREEN_H = 900;
+    const short SCREEN_W = 1600;
+    const short SCREEN_H = 900;
     InitWindow(SCREEN_W, SCREEN_H, TITLE);
 
     SetTargetFPS(MAX_FPS);
-    SetExitKey(0);
+    SetExitKey(0); // Remove exit key (esc by default)
 
     // Set window icon
-    Image icon = LoadImage("../resources/icon.png");
+    Image icon = LoadImage("resources/icon.png");
     printf("----- %d\n", icon.format);
     SetWindowIcon(icon);
 
@@ -67,12 +72,12 @@ int main(void)
     UpdateGameField((float)SCREEN_W, (float)SCREEN_H, &gameField);
 
     // Init snake struct
-    float snakeSize = SNAKE_SIZE * gameField.width * 0.01f;
-    Rectangle snakeBody0 = {(gameField.x + gameField.width * 0.5f) - snakeSize,
-                            gameField.y + gameField.height - snakeSize,
-                            snakeSize, snakeSize};
-    Snake snakePlayer = {snakeSize, SNAKE_SPEED * snakeSize, &snakeBody0, NULL,
-                         UP};
+    float snakeBlockSize = SNAKE_SIZE * (float)SCREEN_W;
+    Rectangle body = {(gameField.x + gameField.width * 0.5f) - snakeBlockSize,
+                      gameField.y + gameField.height - snakeBlockSize,
+                      snakeBlockSize, snakeBlockSize};
+    SnakeBlock snakeBody0 = {&body, NULL};
+    Snake snakePlayer = {snakeBlockSize, &snakeBody0, &snakeBody0, UP};
 
     // Game loop outside vars
     float dtSnake = 0.0f;
@@ -121,13 +126,23 @@ int main(void)
 }
 
 // Function implementations
-void DrawSnake(Snake *snake) { DrawRectangleRec(*snake->head, RED); }
+void DrawSnake(Snake *snake)
+{
+    SnakeBlock *block = snake->tail;
+    while (1)
+    {
+        DrawRectangleRec(*block->body, RED);
+        block = block->next;
+        if (block == NULL)
+            break;
+    }
+}
 
 // Relative to the screen
 void UpdateGameField(float screenW, float screenH, Rectangle *gameField)
 {
-    gameField->width = (float)screenW * FIELD_SIZE;
-    gameField->height = (float)screenH * FIELD_SIZE;
+    gameField->width = screenW * FIELD_SIZE;
+    gameField->height = screenH * FIELD_SIZE;
     gameField->x = (screenW - gameField->width) * 0.5f;
     gameField->y = (screenH - gameField->height) * 0.5f;
 }
@@ -170,24 +185,40 @@ void UpdateSnakePosition(Snake *snake, const float bounds[4])
     switch (snake->direction)
     {
     case UP:
-        snake->head->y -= snake->size;
-        if (snake->head->y < bounds[1])
-            snake->head->y = bounds[3] - snake->head->height;
+        if (snake->head == snake->tail) // Only one snakeBlock
+        {
+            if (snake->head->body->y == bounds[1])
+                snake->head->body->y = bounds[3] - snake->head->body->height;
+            else
+                snake->head->body->y -= snake->head->body->height;
+        }
         break;
     case DOWN:
-        snake->head->y += snake->size;
-        if ((snake->head->y + snake->head->height) > bounds[3])
-            snake->head->y = bounds[1];
+        if (snake->head == snake->tail)
+        {
+            if ((snake->head->body->y + snake->head->body->height) == bounds[3])
+                snake->head->body->y = bounds[1];
+            else
+                snake->head->body->y += snake->head->body->height;
+        }
         break;
     case LEFT:
-        snake->head->x -= snake->size;
-        if (snake->head->x < bounds[0])
-            snake->head->x = bounds[2] - snake->head->width;
+        if (snake->head == snake->tail)
+        {
+            if (snake->head->body->x == bounds[0])
+                snake->head->body->x = bounds[2] - snake->head->body->width;
+            else
+                snake->head->body->x -= snake->head->body->height;
+        }
         break;
     case RIGHT:
-        snake->head->x += snake->size;
-        if ((snake->head->x + snake->head->width) > bounds[2])
-            snake->head->x = bounds[0];
+        if (snake->head == snake->tail)
+        {
+            if ((snake->head->body->x + snake->head->body->width) == bounds[2])
+                snake->head->body->x = bounds[0];
+            else
+                snake->head->body->x += snake->head->body->height;
+        }
         break;
     }
     return;
