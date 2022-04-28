@@ -3,7 +3,7 @@ project(Snake)
 
 add_subdirectory(dependencies/raylib/raylib-4-src dependencies/raylib/bin)
 
-file(GLOB PROJECT_SOURCE_FILES CONFIGURE_DEPENDS *.c)
+file(GLOB PROJECT_SOURCE_FILES CONFIGURE_DEPENDS *.[ch])
 # include_directories(include/)
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_FILES})
 #set(raylib_VERBOSE 1)
