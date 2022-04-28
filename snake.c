@@ -10,12 +10,14 @@
     (Color) { 195, 89, 89, 255 }
 #define SOFT_GREEN                                                             \
     (Color) { 135, 193, 155, 255 }
+#define BANANA                                                                 \
+    (Color) { 214, 222, 146, 255 }
 
 // Numeric values
-#define MAX_FPS (int)60
-#define FIELD_SIZE 0.8f
-#define SNAKE_SIZE 0.05f
-#define SNAKE_SPEED 0.3f
+#define MAX_FPS 120
+#define FIELD_SIZE 0.8f  // % of the screen
+#define SNAKE_SIZE 0.05f // % of the screen
+#define SNAKE_SPEED 0.3f // in seconds
 
 // String literals
 #define TITLE (char *)"Snake"
@@ -44,12 +46,14 @@ typedef struct Controls {
 } Controls;
 
 // Function declarations
-void DrawSnake(Snake *snake);
+void DrawSnake(Snake *snake, Color color);
 void UpdateSnakePosition(Snake *snake, const float bounds[4]);
-void UpdateSnakeDirection(Snake *snake);
+int UpdateSnakeDirection(Snake *snake);
 void UpdateGameField(float screenW, float screenH, Rectangle *gameField);
 int GetBounds(Rectangle rec, float buf[4]);
 Controls InitControls(void);
+void AddSnakeBlock(Rectangle *rec, Snake *snake);
+void GetApple(int size, Rectangle *rec, const Rectangle *gameField);
 
 // Init controls
 Controls CONTROLS = {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT};
@@ -59,8 +63,8 @@ int main(void)
     // Config setup
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
     // Init window
-    const short SCREEN_W = 1600;
-    const short SCREEN_H = 900;
+    const short SCREEN_W = 800;
+    const short SCREEN_H = 600;
     InitWindow(SCREEN_W, SCREEN_H, TITLE);
 
     SetTargetFPS(MAX_FPS);
@@ -76,7 +80,7 @@ int main(void)
     UpdateGameField((float)SCREEN_W, (float)SCREEN_H, &gameField);
 
     // Init snake struct
-    float snakeBlockSize = SNAKE_SIZE * (float)SCREEN_W;
+    int snakeBlockSize = SNAKE_SIZE * (float)SCREEN_W;
     Rectangle body = {(gameField.x + gameField.width * 0.5f) - snakeBlockSize,
                       gameField.y + gameField.height - snakeBlockSize,
                       snakeBlockSize, snakeBlockSize};
@@ -94,6 +98,7 @@ int main(void)
 
     // Game loop outside vars
     float dtSnake = 0.0f;
+    short isAppleActive = 0;
 
     // Game loop
     while (!WindowShouldClose())
@@ -115,8 +120,8 @@ int main(void)
 
         // Update snakePlayer
         dtSnake += GetFrameTime();
-        UpdateSnakeDirection(&snakePlayer);
-        if (dtSnake >= SNAKE_SPEED)
+
+        if (dtSnake >= SNAKE_SPEED || UpdateSnakeDirection(&snakePlayer))
         {
             float bounds[4];
             GetBounds(gameField, bounds);
@@ -130,7 +135,16 @@ int main(void)
         ClearBackground(DARK_MAMBA);
 
         DrawRectangleRec(gameField, SOFT_GREEN);
-        DrawSnake(&snakePlayer);
+        DrawSnake(&snakePlayer, SOFT_RED);
+
+        Rectangle apple;
+        if (IsKeyPressed(KEY_Q))
+        {
+            GetApple(snakeBlockSize, &apple, &gameField);
+            isAppleActive = 1;
+        }
+        if (isAppleActive)
+            DrawRectangleRec(apple, BANANA);
 
         EndDrawing();
     }
@@ -139,14 +153,14 @@ int main(void)
 }
 
 // Function implementations
-void DrawSnake(Snake *snake)
+void DrawSnake(Snake *snake, Color color)
 {
     // Start from tail if more than one block, otherwise just draw head
     SnakeBlock *block =
         (snake->head == snake->tail ? snake->head : snake->tail);
     while (block)
     {
-        DrawRectangleRec(*block->body, SOFT_RED);
+        DrawRectangleRec(*block->body, color);
         block = block->next;
     }
 }
@@ -171,25 +185,32 @@ int GetBounds(Rectangle rec, float buf[4])
     return 0;
 }
 
-void UpdateSnakeDirection(Snake *snake)
+int UpdateSnakeDirection(Snake *snake)
 {
+    int result = 0;
     KeyboardKey pressedKey = GetKeyPressed();
     if (pressedKey)
     {
         if (pressedKey == CONTROLS.snakeDown)
         {
-            snake->direction = DOWN;
+            if (snake->direction != UP)
+                snake->direction = DOWN;
         } else if (pressedKey == CONTROLS.snakeLeft)
         {
-            snake->direction = LEFT;
+            if (snake->direction != RIGHT)
+                snake->direction = LEFT;
         } else if (pressedKey == CONTROLS.snakeRight)
         {
-            snake->direction = RIGHT;
+            if (snake->direction != LEFT)
+                snake->direction = RIGHT;
         } else if (pressedKey == CONTROLS.snakeUp)
         {
-            snake->direction = UP;
+            if (snake->direction != DOWN)
+                snake->direction = UP;
         }
+        result = 1;
     }
+    return result;
 }
 
 void UpdateSnakePosition(Snake *snake, const float bounds[4])
@@ -256,6 +277,24 @@ void UpdateSnakePosition(Snake *snake, const float bounds[4])
         snake->head->next = tailCopy;
         snake->head = tailCopy;
     }
+}
+
+void AddSnakeBlock(Rectangle *rec, Snake *snake)
+{
+    SnakeBlock newBlock = {rec, NULL};
+    snake->head->next = &newBlock;
+    snake->head = &newBlock;
+}
+
+void GetApple(int size, Rectangle *rec, const Rectangle *gameField)
+{
+    int rangeX = gameField->width / size - 1;
+    int rangeY = gameField->height / size - 1;
+    rec->height = rec->width = size;
+    int x = GetRandomValue(0, rangeX);
+    int y = GetRandomValue(0, rangeY);
+    rec->x = x * size + gameField->x;
+    rec->y = y * size + gameField->y;
 }
 
 Controls InitControls(void)
