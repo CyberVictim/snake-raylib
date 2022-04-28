@@ -65,21 +65,39 @@ int main(void)
         }
 
         // Update snakePlayer
+
+        // Process snake movement
         dtSnake += GetFrameTime();
         if (dtSnake >= SNAKE_SPEED || UpdateSnakeDirection(&snakePlayer))
         {
 
-            float bounds[4];
-            GetBounds(gameField, bounds);
-            UpdateSnakePosition(&snakePlayer, bounds);
+            float Fieldbounds[4];
+            GetBounds(gameField, Fieldbounds);
+            UpdateSnakePosition(&snakePlayer, Fieldbounds);
             dtSnake = 0.0f;
+
+            // Check if apple being eaten
+            if (apple)
+            {
+                if (IsAppleInSnake(apple, &snakePlayer, true))
+                {
+                    SnakeBlock appleBlock = {&(Rectangle){}, NULL};
+                    EatApple(apple, &snakePlayer, &appleBlock);
+                    apple = NULL;
+                }
+            }
         }
 
         // Update apple
         dtApple += GetFrameTime();
         if (dtApple >= APPLE_SPEED || IsKeyPressed(KEY_Q))
         {
-            GetApple(snakeBlockSize, &apple, &gameField);
+            bool appleInSnake = true;
+            while (appleInSnake)
+            {
+                GetApple(snakeBlockSize, &apple, &gameField);
+                appleInSnake = IsAppleInSnake(apple, &snakePlayer, false);
+            }
             dtApple = 0.0f;
         }
 

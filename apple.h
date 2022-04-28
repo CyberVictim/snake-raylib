@@ -4,7 +4,7 @@
 #include "main.h"
 #include "raylib.h"
 
-bool IsAppleInSnake(const Rectangle *rec, const Snake *snake);
+bool IsAppleInSnake(const Rectangle *rec, const Snake *snake, bool onlyHead);
 void GetApple(int size, Rectangle **rec, const Rectangle *gameField);
 
 #endif // !APPLE_H_SNAKE

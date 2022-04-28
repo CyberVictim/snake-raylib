@@ -5,7 +5,6 @@
 #include "raylib.h"
 #include "snake.h"
 
-
 void AddSnakeBlock(Rectangle *rec, Snake *snake)
 {
     SnakeBlock newBlock = {rec, NULL};
@@ -103,6 +102,32 @@ int UpdateSnakeDirection(Snake *snake)
     }
     return 0;
 }
+
+void EatApple(Rectangle *apple, Snake *snake, SnakeBlock *appleBlock)
+{
+    switch (snake->direction)
+    {
+    case UP:
+        apple->x = snake->tail->body->x;
+        apple->y = snake->tail->body->y + apple->width;
+        break;
+    case DOWN:
+        apple->x = snake->tail->body->x;
+        apple->y = snake->tail->body->y - apple->width;
+        break;
+    case LEFT:
+        apple->x = snake->tail->body->x + apple->width;
+        apple->y = snake->tail->body->y;
+        break;
+    case RIGHT:
+        apple->x = snake->tail->body->x - apple->width;
+        apple->y = snake->tail->body->y;
+        break;
+    }
+    *appleBlock = (SnakeBlock){apple, snake->tail};
+    snake->tail = appleBlock;
+}
+
 void DrawSnake(Snake *snake, Color color)
 {
     // Start from tail if more than one block, otherwise just draw head

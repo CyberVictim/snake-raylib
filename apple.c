@@ -7,9 +7,9 @@
 
 #include "apple.h"
 
-bool IsAppleInSnake(const Rectangle *rec, const Snake *snake)
+bool IsAppleInSnake(const Rectangle *rec, const Snake *snake, bool onlyHead)
 {
-    SnakeBlock *block = snake->tail;
+    SnakeBlock *block = onlyHead ? snake->head : snake->tail;
     while (block)
     {
         if (rec->x == block->body->x && rec->y == block->body->y)
