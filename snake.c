@@ -5,13 +5,17 @@
 
 // Colors
 #define DARK_MAMBA                                                             \
-    (Color) { 139, 120, 143, 1 }
+    (Color) { 139, 120, 143, 255 }
+#define SOFT_RED                                                               \
+    (Color) { 195, 89, 89, 255 }
+#define SOFT_GREEN                                                             \
+    (Color) { 135, 193, 155, 255 }
 
 // Numeric values
 #define MAX_FPS (int)60
 #define FIELD_SIZE 0.8f
 #define SNAKE_SIZE 0.05f
-#define SNAKE_SPEED 0.7f
+#define SNAKE_SPEED 0.3f
 
 // String literals
 #define TITLE (char *)"Snake"
@@ -76,8 +80,17 @@ int main(void)
     Rectangle body = {(gameField.x + gameField.width * 0.5f) - snakeBlockSize,
                       gameField.y + gameField.height - snakeBlockSize,
                       snakeBlockSize, snakeBlockSize};
+    Rectangle body1 = body;
+    Rectangle body2 = body;
+    Rectangle body3 = body;
+    body1.y -= body1.height;
+    body2.y -= body2.height;
+    body3.y -= body3.height;
     SnakeBlock snakeBody0 = {&body, NULL};
-    Snake snakePlayer = {snakeBlockSize, &snakeBody0, &snakeBody0, UP};
+    SnakeBlock snakeBody1 = {&body1, &snakeBody0};
+    SnakeBlock snakeBody2 = {&body2, &snakeBody1};
+    SnakeBlock snakeBody3 = {&body3, &snakeBody2};
+    Snake snakePlayer = {snakeBlockSize, &snakeBody0, &snakeBody3, UP};
 
     // Game loop outside vars
     float dtSnake = 0.0f;
@@ -116,7 +129,7 @@ int main(void)
 
         ClearBackground(DARK_MAMBA);
 
-        DrawRectangleRec(gameField, GREEN);
+        DrawRectangleRec(gameField, SOFT_GREEN);
         DrawSnake(&snakePlayer);
 
         EndDrawing();
@@ -128,13 +141,13 @@ int main(void)
 // Function implementations
 void DrawSnake(Snake *snake)
 {
-    SnakeBlock *block = snake->tail;
-    while (1)
+    // Start from tail if more than one block, otherwise just draw head
+    SnakeBlock *block =
+        (snake->head == snake->tail ? snake->head : snake->tail);
+    while (block)
     {
-        DrawRectangleRec(*block->body, RED);
+        DrawRectangleRec(*block->body, SOFT_RED);
         block = block->next;
-        if (block == NULL)
-            break;
     }
 }
 
@@ -185,43 +198,64 @@ void UpdateSnakePosition(Snake *snake, const float bounds[4])
     switch (snake->direction)
     {
     case UP:
-        if (snake->head == snake->tail) // Only one snakeBlock
+        if (snake->head->body->y == bounds[1])
         {
-            if (snake->head->body->y == bounds[1])
-                snake->head->body->y = bounds[3] - snake->head->body->height;
-            else
-                snake->head->body->y -= snake->head->body->height;
+            snake->tail->body->x = snake->head->body->x;
+            snake->tail->body->y = bounds[3] - snake->tail->body->height;
+        } else
+        {
+            snake->tail->body->x = snake->head->body->x;
+            snake->tail->body->y =
+                snake->head->body->y - snake->head->body->height;
         }
         break;
     case DOWN:
-        if (snake->head == snake->tail)
+        if ((snake->head->body->y + snake->head->body->height) == bounds[3])
         {
-            if ((snake->head->body->y + snake->head->body->height) == bounds[3])
-                snake->head->body->y = bounds[1];
-            else
-                snake->head->body->y += snake->head->body->height;
+            snake->tail->body->x = snake->head->body->x;
+            snake->tail->body->y = bounds[1];
+        } else
+        {
+            snake->tail->body->x = snake->head->body->x;
+            snake->tail->body->y =
+                snake->head->body->y + snake->head->body->height;
         }
         break;
     case LEFT:
-        if (snake->head == snake->tail)
+        if (snake->head->body->x == bounds[0])
         {
-            if (snake->head->body->x == bounds[0])
-                snake->head->body->x = bounds[2] - snake->head->body->width;
-            else
-                snake->head->body->x -= snake->head->body->height;
+            snake->tail->body->y = snake->head->body->y;
+            snake->tail->body->x = bounds[2] - snake->tail->body->width;
+        } else
+        {
+            snake->tail->body->y = snake->head->body->y;
+            snake->tail->body->x =
+                snake->head->body->x - snake->head->body->height;
         }
         break;
     case RIGHT:
-        if (snake->head == snake->tail)
+        if ((snake->head->body->x + snake->head->body->width) == bounds[2])
         {
-            if ((snake->head->body->x + snake->head->body->width) == bounds[2])
-                snake->head->body->x = bounds[0];
-            else
-                snake->head->body->x += snake->head->body->height;
+            snake->tail->body->y = snake->head->body->y;
+            snake->tail->body->x = bounds[0];
+        } else
+        {
+            snake->tail->body->y = snake->head->body->y;
+            snake->tail->body->x =
+                snake->head->body->x + snake->head->body->height;
         }
         break;
     }
-    return;
+
+    // If more than one snakeBlock, put tail in head
+    if (!(snake->head == snake->tail))
+    {
+        SnakeBlock *tailCopy = snake->tail;
+        snake->tail = tailCopy->next;
+        tailCopy->next = NULL;
+        snake->head->next = tailCopy;
+        snake->head = tailCopy;
+    }
 }
 
 Controls InitControls(void)
