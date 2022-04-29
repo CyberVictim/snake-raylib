@@ -12,6 +12,9 @@
 // Init controls
 Controls CONTROLS = {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT};
 
+// DELETE! temp dev vars
+int logIsAppleInSnake = 0;
+
 int main(void)
 {
     // Config setup
@@ -47,7 +50,7 @@ int main(void)
 
     // Game loop outer vars
     float dtSnake = 0.0f;
-    float dtApple = APPLE_SPEED - 1.0f; // initial time for apple is 1 second
+    float dtApple = APPLE_SPEED - APPLE_SPEED_FIRST; // initial time for apple
     bool appleActive = false;
     bool isScreenFull = false;
     Rectangle apple = {0.0f, 0.0f, snakeBlockSize, snakeBlockSize};
@@ -74,27 +77,24 @@ int main(void)
 
         // Process snake movement
         dtSnake += GetFrameTime();
-        if (dtSnake >= SNAKE_SPEED || UpdateSnakeDirection(&snakePlayer))
+        if (UpdateSnakeDirection(&snakePlayer) || dtSnake >= SNAKE_SPEED)
         {
 
+            dtSnake = 0.0f;
             float Fieldbounds[4];
             GetBounds(gameField, Fieldbounds);
-            UpdateSnakePosition(&snakePlayer, Fieldbounds);
-            dtSnake = 0.0f;
 
-            // Check if apple being eaten
-            if (appleActive)
+            // Update position and process eating apple if function returns 1
+            if (UpdateSnakePosition(&snakePlayer, Fieldbounds,
+                                    appleActive ? &apple : NULL))
             {
-                if (IsAppleInSnake(&apple, &snakePlayer, true))
-                {
-                    EatApple(&apple, &snakePlayer, &snakeBlocks[blocksCounter]);
+                EatApple(&apple, &snakePlayer, &snakeBlocks[blocksCounter]);
 
-                    if ((++blocksCounter) == maxBlocks)
-                        isScreenFull = true;
+                if ((++blocksCounter) == maxBlocks)
+                    isScreenFull = true; // Can this happen?
 
-                    appleActive = false;
-                    dtApple = APPLE_SPEED - 1.0f;
-                }
+                appleActive = false;
+                dtApple = APPLE_SPEED - APPLE_SPEED_FIRST;
             }
         }
 
@@ -102,32 +102,43 @@ int main(void)
         dtApple += GetFrameTime();
         if ((dtApple >= APPLE_SPEED && !isScreenFull) || IsKeyPressed(KEY_Q))
         {
+            dtApple = APPLE_SPEED - 0.1f;
             bool appleInSnake = true;
-            while (appleInSnake)
+            appleActive = false;
+            // Limit the calculation by max N tries per cycle
+            for (int i = 0; i < GET_APPLE_MAX_TRIES; i++)
             {
                 GetApple(&apple, &gameField);
                 appleInSnake = IsAppleInSnake(&apple, &snakePlayer, false);
+                logIsAppleInSnake++;
+                if (!appleInSnake)
+                {
+                    dtApple = 0.0f;
+                    appleActive = true;
+                    break;
+                }
             }
-            dtApple = 0.0f;
-            appleActive = true;
+
+            // temp log
+            printf("IsAppleInSnake calls - %d\n", logIsAppleInSnake);
+            logIsAppleInSnake = 0;
         }
 
         /* --- Draw --- */
         BeginDrawing();
 
-        ClearBackground(DARK_MAMBA);
+        ClearBackground(BACKGROUND_COLOR);
 
         DrawFPS(15, 15);
 
         DrawRectangleRec(gameField, SOFT_GREEN);
-        DrawSnake(&snakePlayer, SOFT_RED);
+        DrawSnake(&snakePlayer, SNAKE_BODY_COLOR, SNAKE_HEAD_COLOR);
 
         if (appleActive)
             DrawRectangleRec(apple, BANANA);
 
         EndDrawing();
     }
-
     // Free resources
     MemFree(snakeBlocks);
 
