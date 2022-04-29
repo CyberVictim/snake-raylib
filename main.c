@@ -7,7 +7,7 @@
 
 #include "apple.h"
 #include "snake.h"
-#include "utils-snake.h"
+#include "utils_snake.h"
 
 // Init controls
 Controls CONTROLS = {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT};

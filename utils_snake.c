@@ -1,6 +1,6 @@
 #include "main.h"
 #include "raylib.h"
-#include "utils-snake.h"
+#include "utils_snake.h"
 // Relative to the screen
 void UpdateGameField(float screenW, float screenH, Rectangle *gameField)
 {
