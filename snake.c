@@ -5,9 +5,22 @@
 #include "raylib.h"
 #include "snake.h"
 
+void InitSnake(Snake *snake, const Rectangle *gameField,
+               const int snakeBlockSize, SnakeBlock *snakeBlocks)
+{
+    Rectangle body = {(gameField->x + gameField->width * 0.5f) - snakeBlockSize,
+                      gameField->y + gameField->height - snakeBlockSize,
+                      snakeBlockSize, snakeBlockSize};
+    snakeBlocks[0] = (SnakeBlock){body, NULL};
+    snake->blockSize = snakeBlockSize;
+    snake->head = &snakeBlocks[0];
+    snake->tail = &snakeBlocks[0];
+    snake->direction = UP;
+}
+
 void AddSnakeBlock(Rectangle *rec, Snake *snake)
 {
-    SnakeBlock newBlock = {rec, NULL};
+    SnakeBlock newBlock = {*rec, NULL};
     snake->head->next = &newBlock;
     snake->head = &newBlock;
 }
@@ -17,51 +30,51 @@ void UpdateSnakePosition(Snake *snake, const float bounds[4])
     switch (snake->direction)
     {
     case UP:
-        if (snake->head->body->y == bounds[1])
+        if (snake->head->body.y == bounds[1])
         {
-            snake->tail->body->x = snake->head->body->x;
-            snake->tail->body->y = bounds[3] - snake->tail->body->height;
+            snake->tail->body.x = snake->head->body.x;
+            snake->tail->body.y = bounds[3] - snake->tail->body.height;
         } else
         {
-            snake->tail->body->x = snake->head->body->x;
-            snake->tail->body->y =
-                snake->head->body->y - snake->head->body->height;
+            snake->tail->body.x = snake->head->body.x;
+            snake->tail->body.y =
+                snake->head->body.y - snake->head->body.height;
         }
         break;
     case DOWN:
-        if ((snake->head->body->y + snake->head->body->height) == bounds[3])
+        if ((snake->head->body.y + snake->head->body.height) == bounds[3])
         {
-            snake->tail->body->x = snake->head->body->x;
-            snake->tail->body->y = bounds[1];
+            snake->tail->body.x = snake->head->body.x;
+            snake->tail->body.y = bounds[1];
         } else
         {
-            snake->tail->body->x = snake->head->body->x;
-            snake->tail->body->y =
-                snake->head->body->y + snake->head->body->height;
+            snake->tail->body.x = snake->head->body.x;
+            snake->tail->body.y =
+                snake->head->body.y + snake->head->body.height;
         }
         break;
     case LEFT:
-        if (snake->head->body->x == bounds[0])
+        if (snake->head->body.x == bounds[0])
         {
-            snake->tail->body->y = snake->head->body->y;
-            snake->tail->body->x = bounds[2] - snake->tail->body->width;
+            snake->tail->body.y = snake->head->body.y;
+            snake->tail->body.x = bounds[2] - snake->tail->body.width;
         } else
         {
-            snake->tail->body->y = snake->head->body->y;
-            snake->tail->body->x =
-                snake->head->body->x - snake->head->body->height;
+            snake->tail->body.y = snake->head->body.y;
+            snake->tail->body.x =
+                snake->head->body.x - snake->head->body.height;
         }
         break;
     case RIGHT:
-        if ((snake->head->body->x + snake->head->body->width) == bounds[2])
+        if ((snake->head->body.x + snake->head->body.width) == bounds[2])
         {
-            snake->tail->body->y = snake->head->body->y;
-            snake->tail->body->x = bounds[0];
+            snake->tail->body.y = snake->head->body.y;
+            snake->tail->body.x = bounds[0];
         } else
         {
-            snake->tail->body->y = snake->head->body->y;
-            snake->tail->body->x =
-                snake->head->body->x + snake->head->body->height;
+            snake->tail->body.y = snake->head->body.y;
+            snake->tail->body.x =
+                snake->head->body.x + snake->head->body.height;
         }
         break;
     }
@@ -108,23 +121,23 @@ void EatApple(Rectangle *apple, Snake *snake, SnakeBlock *appleBlock)
     switch (snake->direction)
     {
     case UP:
-        apple->x = snake->tail->body->x;
-        apple->y = snake->tail->body->y + apple->width;
+        apple->x = snake->tail->body.x;
+        apple->y = snake->tail->body.y + apple->width;
         break;
     case DOWN:
-        apple->x = snake->tail->body->x;
-        apple->y = snake->tail->body->y - apple->width;
+        apple->x = snake->tail->body.x;
+        apple->y = snake->tail->body.y - apple->width;
         break;
     case LEFT:
-        apple->x = snake->tail->body->x + apple->width;
-        apple->y = snake->tail->body->y;
+        apple->x = snake->tail->body.x + apple->width;
+        apple->y = snake->tail->body.y;
         break;
     case RIGHT:
-        apple->x = snake->tail->body->x - apple->width;
-        apple->y = snake->tail->body->y;
+        apple->x = snake->tail->body.x - apple->width;
+        apple->y = snake->tail->body.y;
         break;
     }
-    *appleBlock = (SnakeBlock){apple, snake->tail};
+    *appleBlock = (SnakeBlock){*apple, snake->tail};
     snake->tail = appleBlock;
 }
 
@@ -135,7 +148,7 @@ void DrawSnake(Snake *snake, Color color)
         (snake->head == snake->tail ? snake->head : snake->tail);
     while (block)
     {
-        DrawRectangleRec(*block->body, color);
+        DrawRectangleRec(block->body, color);
         block = block->next;
     }
 }

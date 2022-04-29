@@ -7,7 +7,7 @@
 
 #include "apple.h"
 #include "snake.h"
-#include "utils.h"
+#include "utils-snake.h"
 
 // Init controls
 Controls CONTROLS = {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT};
@@ -35,16 +35,22 @@ int main(void)
 
     // Init snake struct
     int snakeBlockSize = SNAKE_SIZE * (float)SCREEN_W;
-    Rectangle body = {(gameField.x + gameField.width * 0.5f) - snakeBlockSize,
-                      gameField.y + gameField.height - snakeBlockSize,
-                      snakeBlockSize, snakeBlockSize};
-    SnakeBlock snakeBody0 = {&body, NULL};
-    Snake snakePlayer = {snakeBlockSize, &snakeBody0, &snakeBody0, UP};
+    // fixed size blocks per field
+    int maxBlocks = ((int)gameField.width / snakeBlockSize) *
+                    ((int)gameField.height / snakeBlockSize);
+    SnakeBlock *snakeBlocks =
+        MemAlloc(sizeof(SnakeBlock) * maxBlocks); // array of all blocks
+    unsigned short blocksCounter = 0; // Keep tracking the next block address
+    Snake snakePlayer;
+    InitSnake(&snakePlayer, &gameField, snakeBlockSize, snakeBlocks);
+    blocksCounter++;
 
     // Game loop outer vars
     float dtSnake = 0.0f;
-    float dtApple = APPLE_SPEED - 1.0f;
-    Rectangle *apple = NULL;
+    float dtApple = APPLE_SPEED - 1.0f; // initial time for apple is 1 second
+    bool appleActive = false;
+    bool isScreenFull = false;
+    Rectangle apple = {0.0f, 0.0f, snakeBlockSize, snakeBlockSize};
 
     // Game loop
     while (!WindowShouldClose())
@@ -77,28 +83,33 @@ int main(void)
             dtSnake = 0.0f;
 
             // Check if apple being eaten
-            if (apple)
+            if (appleActive)
             {
-                if (IsAppleInSnake(apple, &snakePlayer, true))
+                if (IsAppleInSnake(&apple, &snakePlayer, true))
                 {
-                    SnakeBlock appleBlock = {&(Rectangle){}, NULL};
-                    EatApple(apple, &snakePlayer, &appleBlock);
-                    apple = NULL;
+                    EatApple(&apple, &snakePlayer, &snakeBlocks[blocksCounter]);
+
+                    if ((++blocksCounter) == maxBlocks)
+                        isScreenFull = true;
+
+                    appleActive = false;
+                    dtApple = APPLE_SPEED - 1.0f;
                 }
             }
         }
 
         // Update apple
         dtApple += GetFrameTime();
-        if (dtApple >= APPLE_SPEED || IsKeyPressed(KEY_Q))
+        if ((dtApple >= APPLE_SPEED && !isScreenFull) || IsKeyPressed(KEY_Q))
         {
             bool appleInSnake = true;
             while (appleInSnake)
             {
-                GetApple(snakeBlockSize, &apple, &gameField);
-                appleInSnake = IsAppleInSnake(apple, &snakePlayer, false);
+                GetApple(&apple, &gameField);
+                appleInSnake = IsAppleInSnake(&apple, &snakePlayer, false);
             }
             dtApple = 0.0f;
+            appleActive = true;
         }
 
         /* --- Draw --- */
@@ -111,12 +122,15 @@ int main(void)
         DrawRectangleRec(gameField, SOFT_GREEN);
         DrawSnake(&snakePlayer, SOFT_RED);
 
-        if (apple)
-            DrawRectangleRec(*apple, BANANA);
+        if (appleActive)
+            DrawRectangleRec(apple, BANANA);
 
         EndDrawing();
     }
-    MemFree(apple);
+
+    // Free resources
+    MemFree(snakeBlocks);
+
     CloseWindow();
     return 0;
 }

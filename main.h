@@ -29,7 +29,7 @@
 typedef enum { UP, DOWN, LEFT, RIGHT } DIRECTION;
 
 typedef struct SnakeBlock {
-    Rectangle *body;
+    Rectangle body;
     struct SnakeBlock *next;
 } SnakeBlock;
 
@@ -48,7 +48,6 @@ typedef struct Controls {
     KeyboardKey snakeRight;
 } Controls;
 
-// Init controls
 extern Controls CONTROLS;
 
 #endif // !MAIN_H_SNAKE

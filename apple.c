@@ -7,29 +7,31 @@
 
 #include "apple.h"
 
-bool IsAppleInSnake(const Rectangle *rec, const Snake *snake, bool onlyHead)
+bool IsAppleInSnake(const Rectangle *apple, const Snake *snake, bool onlyHead)
 {
     SnakeBlock *block = onlyHead ? snake->head : snake->tail;
     while (block)
     {
-        if (rec->x == block->body->x && rec->y == block->body->y)
+        if (apple->x == block->body.x && apple->y == block->body.y)
             return true;
         block = block->next;
     }
     return false;
 }
 
-void GetApple(int size, Rectangle **rec, const Rectangle *gameField)
+void GetApple(Rectangle *apple, const Rectangle *gameField)
 {
-    Rectangle apple;
-    int rangeX = gameField->width / size - 1;
-    int rangeY = gameField->height / size - 1;
-    apple.height = apple.width = size;
+    // Get range for possible fixed coordinates (0 to MAX)
+    int appleSize = apple->height;
+    int rangeX = gameField->width / appleSize - 1;
+    int rangeY = gameField->height / appleSize - 1;
+
+    // Get pseudo random fixed coordinate from range
     SetRandomSeed(time(NULL));
     int x = GetRandomValue(0, rangeX);
     int y = GetRandomValue(0, rangeY);
-    apple.x = x * size + gameField->x;
-    apple.y = y * size + gameField->y;
-    *rec = MemAlloc(sizeof(Rectangle));
-    **rec = apple;
+
+    // Calculate actual screen coordinate
+    apple->x = x * appleSize + gameField->x;
+    apple->y = y * appleSize + gameField->y;
 }
