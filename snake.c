@@ -4,6 +4,7 @@
 
 #include "raylib.h"
 #include "snake.h"
+#include "utils_snake.h"
 
 bool SnakeHitItself(const Snake *snake)
 {
@@ -179,4 +180,48 @@ void DrawSnake(Snake *snake, Color bodyColor, Color headColor)
         block = block->next;
     }
     DrawRectangleRec(snake->head->body, headColor);
+}
+
+// Update snakePlayer
+void UpdateSnake(GameData *gameData)
+{
+    // Process snake movement
+    gameData->dtSnake += GetFrameTime();
+    if (UpdateSnakeDirection(&gameData->snakePlayer) ||
+        gameData->dtSnake >= SNAKE_SPEED)
+    {
+
+        gameData->dtSnake = 0.0f;
+        float Fieldbounds[4];
+        GetBounds(gameData->gameField, Fieldbounds);
+
+        // Update position and process eating apple if function returns 1
+        if (UpdateSnakePosition(&gameData->snakePlayer, Fieldbounds,
+                                gameData->appleActive ? &gameData->apple
+                                                      : NULL))
+        {
+            EatApple(&gameData->apple, &gameData->snakePlayer,
+                     &gameData->snakeBlocks[++gameData->blocksCounter]);
+
+            if (gameData->blocksCounter == gameData->maxBlocks)
+            {
+                gameData->GAME_STATE = GAME_SCREEN_FILLED;
+#ifdef DEBUG
+                printf("game field filled\n");
+#endif // DEBUG
+            }
+
+            gameData->appleActive = false;
+            gameData->dtApple = APPLE_SPEED - APPLE_SPEED_FIRST;
+        }
+
+        // Snake hit itself
+        if (SnakeHitItself(&gameData->snakePlayer))
+        {
+            gameData->GAME_STATE = GAME_OVER;
+#ifdef DEBUG
+            printf("game over\n");
+#endif // DEBUG
+        }
+    }
 }

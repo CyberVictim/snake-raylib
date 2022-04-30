@@ -34,33 +34,14 @@ int main(void)
     printf("----- %d\n", icon.format);
     SetWindowIcon(icon);
 
-    // Init game field in the center of the screen
-    Rectangle gameField;
-    UpdateGameField((float)SCREEN_W, (float)SCREEN_H, &gameField, FIELD_SIZE);
-
-    // Init snake struct
-    int snakeBlockSize = SNAKE_SIZE * (float)gameField.width;
-    // fixed size blocks per field
-    int maxBlocks = ((int)gameField.width / snakeBlockSize) *
-                    ((int)gameField.height / snakeBlockSize);
-    SnakeBlock *snakeBlocks =
-        MemAlloc(sizeof(SnakeBlock) * maxBlocks); // array of all blocks
-    unsigned short blocksCounter = 0; // Keep tracking the next block address
-    Snake snakePlayer;
-    InitSnake(&snakePlayer, &gameField, snakeBlockSize,
-              &snakeBlocks[blocksCounter]);
-    blocksCounter++;
+    // GameData
+    GameData gameData;
+    InitGameData(&gameData, SCREEN_W, SCREEN_H);
 
 #ifdef DEBUG
-    LogCheckGameRatios(snakeBlockSize, (int)gameField.width);
+    LogCheckGameRatios(gameData.snakePlayer.blockSize,
+                       (int)gameData.gameField.width);
 #endif // DEBUG
-
-    // Game loop outer vars
-    SnakeGameState GAME_STATE = GAME_ON;
-    float dtSnake = 0.0f;
-    float dtApple = APPLE_SPEED - APPLE_SPEED_FIRST; // initial time for apple
-    bool appleActive = false;
-    Rectangle apple = {0.0f, 0.0f, snakeBlockSize, snakeBlockSize};
 
     // Game loop
     while (!WindowShouldClose())
@@ -71,21 +52,23 @@ int main(void)
             break;
         }
 
-        switch (GAME_STATE)
+        switch (gameData.GAME_STATE)
         {
         case GAME_MENU:
             // init game menu here
             break;
         case GAME_OVER:
-            DrawText("game is over", gameField.x + gameField.width * 0.4,
-                     gameField.y - 20, 20, BANANA);
+            DrawText("game is over",
+                     gameData.gameField.x + gameData.gameField.width * 0.4,
+                     gameData.gameField.y - 20, 20, BANANA);
             break;
         case GAME_SCREEN_FILLED:
             DrawText("game is finished you did it",
-                     gameField.x + gameField.width * 0.4, gameField.y - 20, 20,
-                     BANANA);
+                     gameData.gameField.x + gameData.gameField.width * 0.4,
+                     gameData.gameField.y - 20, 20, BANANA);
             break;
         case GAME_ON:
+            UpdateSnake(&gameData);
             break;
         }
 
@@ -95,68 +78,31 @@ int main(void)
         if (IsWindowResized())
         {
             UpdateGameField((float)GetScreenWidth(), (float)GetScreenHeight(),
-                            &gameField, FIELD_SIZE);
-        }
-
-        // Update snakePlayer
-
-        // Process snake movement
-        dtSnake += GetFrameTime();
-        if (UpdateSnakeDirection(&snakePlayer) || dtSnake >= SNAKE_SPEED)
-        {
-
-            dtSnake = 0.0f;
-            float Fieldbounds[4];
-            GetBounds(gameField, Fieldbounds);
-
-            // Update position and process eating apple if function returns 1
-            if (UpdateSnakePosition(&snakePlayer, Fieldbounds,
-                                    appleActive ? &apple : NULL))
-            {
-                EatApple(&apple, &snakePlayer, &snakeBlocks[++blocksCounter]);
-
-                if (blocksCounter == maxBlocks)
-                {
-                    GAME_STATE = GAME_SCREEN_FILLED;
-#ifdef DEBUG
-                    printf("game field filled\n");
-#endif // DEBUG
-                }
-
-                appleActive = false;
-                dtApple = APPLE_SPEED - APPLE_SPEED_FIRST;
-            }
-
-            // Snake hit itself
-            if (SnakeHitItself(&snakePlayer))
-            {
-                GAME_STATE = GAME_OVER;
-#ifdef DEBUG
-                printf("game over\n");
-#endif // DEBUG
-            }
+                            &gameData.gameField, FIELD_SIZE);
         }
 
         // Update apple
-        dtApple += GetFrameTime();
-        if ((dtApple >= APPLE_SPEED && GAME_STATE != GAME_SCREEN_FILLED) ||
+        gameData.dtApple += GetFrameTime();
+        if ((gameData.dtApple >= APPLE_SPEED &&
+             gameData.GAME_STATE != GAME_SCREEN_FILLED) ||
             IsKeyPressed(KEY_Q))
         {
-            dtApple = APPLE_SPEED - 0.1f;
+            gameData.dtApple = APPLE_SPEED - 0.1f;
             bool appleInSnake = true;
-            appleActive = false;
+            gameData.appleActive = false;
             // Limit the calculation by max N tries per cycle
             for (int i = 0; i < GET_APPLE_MAX_TRIES; i++)
             {
-                GetApple(&apple, &gameField);
-                appleInSnake = IsRecInSnake(&apple, &snakePlayer);
+                GetApple(&gameData.apple, &gameData.gameField);
+                appleInSnake =
+                    IsRecInSnake(&gameData.apple, &gameData.snakePlayer);
 #ifdef DEBUG
                 logIsAppleInSnake++;
 #endif // DEBUG
                 if (!appleInSnake)
                 {
-                    dtApple = 0.0f;
-                    appleActive = true;
+                    gameData.dtApple = 0.0f;
+                    gameData.appleActive = true;
                     break;
                 }
             }
@@ -172,18 +118,21 @@ int main(void)
 
         ClearBackground(BACKGROUND_COLOR);
 
-        DrawFPS(15, 15);
+        if (gameData.gameSettingsFlags & SET_SNAKE_SHOW_FPS)
+        {
+            DrawFPS(15, 15);
+        }
 
-        DrawRectangleRec(gameField, SOFT_GREEN);
-        DrawSnake(&snakePlayer, SNAKE_BODY_COLOR, SNAKE_HEAD_COLOR);
+        DrawRectangleRec(gameData.gameField, SOFT_GREEN);
+        DrawSnake(&gameData.snakePlayer, SNAKE_BODY_COLOR, SNAKE_HEAD_COLOR);
 
-        if (appleActive)
-            DrawRectangleRec(apple, BANANA);
+        if (gameData.appleActive)
+            DrawRectangleRec(gameData.apple, BANANA);
 
         EndDrawing();
     }
     // Free resources
-    MemFree(snakeBlocks);
+    MemFree(gameData.snakeBlocks);
 
     CloseWindow();
     return 0;

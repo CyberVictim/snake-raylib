@@ -4,6 +4,7 @@
 #include "main.h"
 #include "raylib.h"
 
+void UpdateSnake(GameData *gameData);
 void InitSnake(Snake *snake, const Rectangle *gameField,
                const int snakeBlockSize, SnakeBlock *snakeBlock);
 void DrawSnake(Snake *snake, Color bodyColor, Color headColor);

@@ -29,6 +29,7 @@
 #define APPLE_SPEED 8.0f           // in seconds
 #define GET_APPLE_MAX_TRIES 100000 // max N of tries to get apple
 #define APPLE_SPEED_FIRST 0.2f     // in seconds
+#define INITIAL_GAME_STATE GAME_ON
 
 // String literals
 #define TITLE (char *)"Snake"
@@ -56,6 +57,26 @@ typedef struct Snake {
     DIRECTION direction : 3; // 0, 1, 2, 3 (four directions)
     // SnakeBlock blocks[];
 } Snake;
+
+// Bit flags, actual flag is stored in GameData struct
+typedef enum GameSettingsFlags {
+    SET_SNAKE_SHOW_FPS = 0x00000001,
+    SET_SNAKE_FULL_SCREEN = 0x00000002
+} GameSettingsFlags;
+
+typedef struct GameData {
+    float dtSnake;
+    float dtApple;
+    int maxBlocks;
+    bool appleActive;
+    SnakeBlock *snakeBlocks;
+    Snake snakePlayer;
+    Rectangle gameField;
+    Rectangle apple;
+    SnakeGameState GAME_STATE;
+    unsigned short blocksCounter;
+    unsigned int gameSettingsFlags;
+} GameData;
 
 typedef struct Controls {
     KeyboardKey snakeUp;
