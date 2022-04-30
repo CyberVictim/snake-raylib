@@ -5,16 +5,50 @@
 #include "raylib.h"
 #include "snake.h"
 
+bool SnakeHitItself(const Snake *snake)
+{
+    float posX = snake->head->body.x;
+    float posY = snake->head->body.y;
+    SnakeBlock *block = snake->tail;
+    while (block)
+    {
+        if (posX == block->body.x && posY == block->body.y)
+        {
+            if (block->next)
+            {
+                return true;
+            } else
+            {
+                break;
+            }
+        }
+        block = block->next;
+    }
+    return false;
+}
+bool IsRecInSnake(const Rectangle *rec, const Snake *snake)
+{
+    SnakeBlock *block = snake->tail;
+    while (block)
+    {
+        if (rec->x == block->body.x && rec->y == block->body.y)
+        {
+            return true;
+        }
+        block = block->next;
+    }
+    return false;
+}
 void InitSnake(Snake *snake, const Rectangle *gameField,
-               const int snakeBlockSize, SnakeBlock *snakeBlocks)
+               const int snakeBlockSize, SnakeBlock *snakeBlock)
 {
     Rectangle body = {(gameField->x + gameField->width * 0.5f) - snakeBlockSize,
                       gameField->y + gameField->height - snakeBlockSize,
                       snakeBlockSize, snakeBlockSize};
-    snakeBlocks[0] = (SnakeBlock){body, NULL};
+    *snakeBlock = (SnakeBlock){body, NULL};
     snake->blockSize = snakeBlockSize;
-    snake->head = &snakeBlocks[0];
-    snake->tail = &snakeBlocks[0];
+    snake->head = snakeBlock;
+    snake->tail = snakeBlock;
     snake->direction = UP;
 }
 

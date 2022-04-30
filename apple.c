@@ -7,17 +7,6 @@
 
 #include "apple.h"
 
-bool IsAppleInSnake(const Rectangle *apple, const Snake *snake, bool onlyHead)
-{
-    SnakeBlock *block = onlyHead ? snake->head : snake->tail;
-    while (block)
-    {
-        if (apple->x == block->body.x && apple->y == block->body.y)
-            return true;
-        block = block->next;
-    }
-    return false;
-}
 
 void GetApple(Rectangle *apple, const Rectangle *gameField)
 {

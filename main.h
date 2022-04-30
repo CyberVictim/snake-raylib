@@ -24,8 +24,8 @@
 // Numeric values
 #define MAX_FPS 120
 #define FIELD_SIZE 0.8f            // % of the screen
-#define SNAKE_SIZE 0.05f           // % of the screen
-#define SNAKE_SPEED 0.1f           // in seconds
+#define SNAKE_SIZE 0.25f           // % of the screen
+#define SNAKE_SPEED 1.0f           // in seconds
 #define APPLE_SPEED 8.0f           // in seconds
 #define GET_APPLE_MAX_TRIES 100000 // max N of tries to get apple
 #define APPLE_SPEED_FIRST 0.2f     // in seconds
@@ -34,7 +34,15 @@
 #define TITLE (char *)"Snake"
 
 // Game entities
-typedef enum { UP, DOWN, LEFT, RIGHT } DIRECTION;
+typedef enum DIRECTION { UP, DOWN, LEFT, RIGHT } DIRECTION;
+
+// Game states
+typedef enum SnakeGameState {
+    GAME_OVER,
+    GAME_ON,
+    GAME_MENU,
+    GAME_SCREEN_FILLED
+} SnakeGameState;
 
 typedef struct SnakeBlock {
     Rectangle body;
