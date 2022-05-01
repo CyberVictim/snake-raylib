@@ -26,12 +26,25 @@ int GetBounds(Rectangle rec, float buf[4])
     return 0;
 }
 
+void CheckExitInput(GameData *gameData)
+{
+    // Set exit combination
+    if (IsKeyDown(gameData->CONTROLS.exitKeyFirst) &&
+        IsKeyDown(gameData->CONTROLS.exitKeyLast))
+    {
+        gameData->GAME_STATE = GAME_EXIT;
+    }
+}
+
 void LogCheckGameRatios(int snakeSize, int gameFieldWidth)
 {
     if (gameFieldWidth % snakeSize != 0)
     {
-        TraceLog(LOG_WARNING, "Snake size to gamefield ratio is wrong, asjust "
-                              "SNAKE_SIZE or FIELD_SIZE");
+        TraceLog(LOG_WARNING,
+                 "Snake size to gamefield ratio is wrong: snake size %d | "
+                 "field size %d\nAsjust "
+                 "SNAKE_SIZE or FIELD_SIZE",
+                 snakeSize, gameFieldWidth);
         exit(EXIT_FAILURE);
     }
     TraceLog(LOG_INFO, "Snake size seems good");
@@ -43,25 +56,27 @@ void InitGameData(GameData *gameData, float SCREEN_W, float SCREEN_H)
     UpdateGameField(SCREEN_W, SCREEN_H, &gameData->gameField, FIELD_SIZE);
 
     // fixed size blocks per field
-    int snakeBlockSize = SNAKE_SIZE * (float)gameData->gameField.width;
-    int maxBlocks = ((int)gameData->gameField.width / snakeBlockSize) *
-                    ((int)gameData->gameField.height / snakeBlockSize);
+    gameData->blockSize = SNAKE_SIZE * (float)gameData->gameField.width;
+    int maxBlocks = ((int)gameData->gameField.width / gameData->blockSize) *
+                    ((int)gameData->gameField.height / gameData->blockSize);
 
     // Init array of all snake blocks
     gameData->snakeBlocks = MemAlloc(sizeof(SnakeBlock) * maxBlocks);
-    gameData->blocksCounter = 0; // keep track of next block's address
 
-    // Init snakePlayer
-    InitSnake(&gameData->snakePlayer, &gameData->gameField, snakeBlockSize,
-              &gameData->snakeBlocks[gameData->blocksCounter++]);
+    // Init mutating gameplay values
+    ResetGameData(gameData);
 
-    gameData->GAME_STATE = INITIAL_GAME_STATE;
-    gameData->dtSnake = 0.0f;
-    gameData->dtApple = APPLE_SPEED - APPLE_SPEED_FIRST; // initial  apple time
-    gameData->appleActive = false;
-    gameData->apple = (Rectangle){0.0f, 0.0f, snakeBlockSize, snakeBlockSize};
+    gameData->apple = (Rectangle){0.0f, 0.0f, gameData->blockSize, gameData->blockSize};
 
-    // init game settings flags
+    // init game default settings
     unsigned int defaultGameSettings = SET_SNAKE_SHOW_FPS;
     gameData->gameSettingsFlags = defaultGameSettings;
+
+    // Init default controls
+    gameData->CONTROLS = (Controls){KEY_UP,
+                                    KEY_DOWN,
+                                    KEY_LEFT,
+                                    KEY_RIGHT,
+                                    .exitKeyFirst = KEY_LEFT_ALT,
+                                    .exitKeyLast = KEY_Q};
 }

@@ -9,13 +9,9 @@
 #include "snake.h"
 #include "utils_snake.h"
 
-// Init controls
-Controls CONTROLS = {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT};
-
-// DELETE! temp dev vars
+#ifdef DEBUG
 int logIsAppleInSnake = 0;
-
-#define DEBUG // Include debug code
+#endif // DEBUG
 
 int main(void)
 {
@@ -39,78 +35,47 @@ int main(void)
     InitGameData(&gameData, SCREEN_W, SCREEN_H);
 
 #ifdef DEBUG
-    LogCheckGameRatios(gameData.snakePlayer.blockSize,
-                       (int)gameData.gameField.width);
+    printf("%d\n", gameData.GAME_STATE);
+    LogCheckGameRatios(gameData.blockSize, (int)gameData.gameField.width);
 #endif // DEBUG
 
     // Game loop
-    while (!WindowShouldClose())
+    while (!WindowShouldClose() && gameData.GAME_STATE != GAME_EXIT)
     {
-        // Set exit combination
-        if (IsKeyDown(KEY_LEFT_ALT) && IsKeyDown(KEY_Q))
-        {
-            break;
-        }
+
+        CheckExitInput(&gameData);
 
         switch (gameData.GAME_STATE)
         {
         case GAME_MENU:
             // init game menu here
             break;
+
         case GAME_OVER:
-            DrawText("game is over",
-                     gameData.gameField.x + gameData.gameField.width * 0.4,
-                     gameData.gameField.y - 20, 20, BANANA);
+            GameOverScreenLoop(&gameData);
             break;
+
         case GAME_SCREEN_FILLED:
             DrawText("game is finished you did it",
                      gameData.gameField.x + gameData.gameField.width * 0.4,
                      gameData.gameField.y - 20, 20, BANANA);
             break;
+
         case GAME_ON:
             UpdateSnake(&gameData);
+            UpdateApple(&gameData);
             break;
+#ifndef DEBUG
+        default:
+            break;
+#endif // !DEBUG
         }
 
-        /* --- Update state --- */
-
-        // Handle resize
+        // Handle resize, unfinished
         if (IsWindowResized())
         {
             UpdateGameField((float)GetScreenWidth(), (float)GetScreenHeight(),
                             &gameData.gameField, FIELD_SIZE);
-        }
-
-        // Update apple
-        gameData.dtApple += GetFrameTime();
-        if ((gameData.dtApple >= APPLE_SPEED &&
-             gameData.GAME_STATE != GAME_SCREEN_FILLED) ||
-            IsKeyPressed(KEY_Q))
-        {
-            gameData.dtApple = APPLE_SPEED - 0.1f;
-            bool appleInSnake = true;
-            gameData.appleActive = false;
-            // Limit the calculation by max N tries per cycle
-            for (int i = 0; i < GET_APPLE_MAX_TRIES; i++)
-            {
-                GetApple(&gameData.apple, &gameData.gameField);
-                appleInSnake =
-                    IsRecInSnake(&gameData.apple, &gameData.snakePlayer);
-#ifdef DEBUG
-                logIsAppleInSnake++;
-#endif // DEBUG
-                if (!appleInSnake)
-                {
-                    gameData.dtApple = 0.0f;
-                    gameData.appleActive = true;
-                    break;
-                }
-            }
-
-#ifdef DEBUG
-            printf("IsAppleInSnake calls - %d\n", logIsAppleInSnake);
-            logIsAppleInSnake = 0;
-#endif // DEBUG
         }
 
         /* --- Draw --- */

@@ -3,6 +3,15 @@
 
 #include "raylib.h"
 
+/* --- DEBUG --- */
+#define DEBUG // Include debug code
+
+#ifdef DEBUG
+
+extern int logIsAppleInSnake;
+
+#endif // DEBUG
+
 /* Defines */
 
 // Colors
@@ -42,7 +51,8 @@ typedef enum SnakeGameState {
     GAME_OVER,
     GAME_ON,
     GAME_MENU,
-    GAME_SCREEN_FILLED
+    GAME_SCREEN_FILLED,
+    GAME_EXIT
 } SnakeGameState;
 
 typedef struct SnakeBlock {
@@ -51,7 +61,6 @@ typedef struct SnakeBlock {
 } SnakeBlock;
 
 typedef struct Snake {
-    float blockSize;
     SnakeBlock *head;
     SnakeBlock *tail;
     DIRECTION direction : 3; // 0, 1, 2, 3 (four directions)
@@ -64,27 +73,29 @@ typedef enum GameSettingsFlags {
     SET_SNAKE_FULL_SCREEN = 0x00000002
 } GameSettingsFlags;
 
-typedef struct GameData {
-    float dtSnake;
-    float dtApple;
-    int maxBlocks;
-    bool appleActive;
-    SnakeBlock *snakeBlocks;
-    Snake snakePlayer;
-    Rectangle gameField;
-    Rectangle apple;
-    SnakeGameState GAME_STATE;
-    unsigned short blocksCounter;
-    unsigned int gameSettingsFlags;
-} GameData;
-
 typedef struct Controls {
     KeyboardKey snakeUp;
     KeyboardKey snakeDown;
     KeyboardKey snakeLeft;
     KeyboardKey snakeRight;
+    KeyboardKey exitKeyFirst;
+    KeyboardKey exitKeyLast;
 } Controls;
 
-extern Controls CONTROLS;
+typedef struct GameData {
+    float dtSnake;
+    float dtApple;
+    float blockSize;
+    int maxBlocks;
+    Rectangle gameField;
+    Rectangle apple;
+    SnakeBlock *snakeBlocks;
+    Snake snakePlayer;
+    Controls CONTROLS;
+    bool appleActive;
+    SnakeGameState GAME_STATE;
+    unsigned int gameSettingsFlags;
+    unsigned short blocksCounter;
+} GameData;
 
 #endif // !MAIN_H_SNAKE

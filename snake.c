@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "main.h"
@@ -47,7 +48,6 @@ void InitSnake(Snake *snake, const Rectangle *gameField,
                       gameField->y + gameField->height - snakeBlockSize,
                       snakeBlockSize, snakeBlockSize};
     *snakeBlock = (SnakeBlock){body, NULL};
-    snake->blockSize = snakeBlockSize;
     snake->head = snakeBlock;
     snake->tail = snakeBlock;
     snake->direction = UP;
@@ -136,24 +136,24 @@ int UpdateSnakePosition(Snake *snake, const float bounds[4],
     return 0;
 }
 
-bool UpdateSnakeDirection(Snake *snake)
+bool UpdateSnakeDirection(Snake *snake, const Controls *controls)
 {
-    if (IsKeyPressed(CONTROLS.snakeDown))
+    if (IsKeyPressed(controls->snakeDown))
     {
         if (snake->direction != UP)
             snake->direction = DOWN;
         return true;
-    } else if (IsKeyPressed(CONTROLS.snakeLeft))
+    } else if (IsKeyPressed(controls->snakeLeft))
     {
         if (snake->direction != RIGHT)
             snake->direction = LEFT;
         return true;
-    } else if (IsKeyPressed(CONTROLS.snakeRight))
+    } else if (IsKeyPressed(controls->snakeRight))
     {
         if (snake->direction != LEFT)
             snake->direction = RIGHT;
         return true;
-    } else if (IsKeyPressed(CONTROLS.snakeUp))
+    } else if (IsKeyPressed(controls->snakeUp))
     {
         if (snake->direction != DOWN)
             snake->direction = UP;
@@ -187,7 +187,7 @@ void UpdateSnake(GameData *gameData)
 {
     // Process snake movement
     gameData->dtSnake += GetFrameTime();
-    if (UpdateSnakeDirection(&gameData->snakePlayer) ||
+    if (UpdateSnakeDirection(&gameData->snakePlayer, &gameData->CONTROLS) ||
         gameData->dtSnake >= SNAKE_SPEED)
     {
 
@@ -222,6 +222,39 @@ void UpdateSnake(GameData *gameData)
 #ifdef DEBUG
             printf("game over\n");
 #endif // DEBUG
+        }
+    }
+}
+void ResetGameData(GameData *gameData)
+{
+    gameData->GAME_STATE = INITIAL_GAME_STATE;
+    gameData->appleActive = false;
+    gameData->dtApple = APPLE_SPEED - APPLE_SPEED_FIRST;
+    gameData->dtSnake = 0.0f;
+    gameData->blocksCounter = 0;
+    InitSnake(&gameData->snakePlayer, &gameData->gameField, gameData->blockSize,
+              &gameData->snakeBlocks[gameData->blocksCounter++]);
+}
+
+void RestartGame(GameData *gameData) { ResetGameData(gameData); }
+void GameOverScreenLoop(GameData *gameData)
+{
+    while (!WindowShouldClose())
+    {
+        BeginDrawing();
+        DrawText("GAME OVER, press ENTER to restart, ESCAPE for menu",
+                 gameData->gameField.x + gameData->gameField.width * 0.4,
+                 gameData->gameField.y - 25, 25, BANANA);
+        EndDrawing();
+
+        if (IsKeyPressed(KEY_ENTER))
+        {
+            RestartGame(gameData);
+            break;
+        } else if (IsKeyPressed(KEY_ESCAPE))
+        {
+            gameData->GAME_STATE = GAME_MENU;
+            break;
         }
     }
 }
