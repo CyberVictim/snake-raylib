@@ -19,6 +19,6 @@ void EatApple(Rectangle *apple, Snake *snake, SnakeBlock *appleBlock);
 bool SnakeHitItself(const Snake *snake);
 bool IsRecInSnake(const Rectangle *rec, const Snake *snake);
 
-void GameOverScreenLoop(GameData *gameData);
+void GameStateAlert(GameData *gameData, const char *msg, int screen_h);
 
 #endif // !SNAKE_H_SNAKE

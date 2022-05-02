@@ -42,9 +42,7 @@ int main(void)
     // Game loop
     while (!WindowShouldClose() && gameData.GAME_STATE != GAME_EXIT)
     {
-
         CheckExitInput(&gameData);
-
         switch (gameData.GAME_STATE)
         {
         case GAME_MENU:
@@ -52,13 +50,16 @@ int main(void)
             break;
 
         case GAME_OVER:
-            GameOverScreenLoop(&gameData);
+            GameStateAlert(&gameData,
+                           "GAME OVER! Press Enter to restart, Escape for menu",
+                           SCREEN_H);
             break;
 
         case GAME_SCREEN_FILLED:
-            DrawText("game is finished you did it",
-                     gameData.gameField.x + gameData.gameField.width * 0.4,
-                     gameData.gameField.y - 20, 20, BANANA);
+            GameStateAlert(
+                &gameData,
+                "SNAKE IS FULL! Press Enter to restart, Escape for menu",
+                SCREEN_H);
             break;
 
         case GAME_ON:

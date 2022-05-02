@@ -57,11 +57,11 @@ void InitGameData(GameData *gameData, float SCREEN_W, float SCREEN_H)
 
     // fixed size blocks per field
     gameData->blockSize = SNAKE_SIZE * (float)gameData->gameField.width;
-    int maxBlocks = ((int)gameData->gameField.width / gameData->blockSize) *
+    gameData->maxBlocks = ((int)gameData->gameField.width / gameData->blockSize) *
                     ((int)gameData->gameField.height / gameData->blockSize);
 
     // Init array of all snake blocks
-    gameData->snakeBlocks = MemAlloc(sizeof(SnakeBlock) * maxBlocks);
+    gameData->snakeBlocks = MemAlloc(sizeof(SnakeBlock) * gameData->maxBlocks);
 
     // Init mutating gameplay values
     ResetGameData(gameData);

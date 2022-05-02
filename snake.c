@@ -1,6 +1,9 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "GLFW/glfw3.h"
 #include "main.h"
 
 #include "raylib.h"
@@ -19,7 +22,8 @@ bool SnakeHitItself(const Snake *snake)
             if (block->next)
             {
                 return true;
-            } else
+            }
+            else
             {
                 break;
             }
@@ -72,7 +76,8 @@ int UpdateSnakePosition(Snake *snake, const float bounds[4],
         {
             newPosX = snake->head->body.x;
             newPosY = bounds[3] - snake->tail->body.height;
-        } else
+        }
+        else
         {
             newPosX = snake->head->body.x;
             newPosY = snake->head->body.y - snake->head->body.height;
@@ -83,7 +88,8 @@ int UpdateSnakePosition(Snake *snake, const float bounds[4],
         {
             newPosX = snake->head->body.x;
             newPosY = bounds[1];
-        } else
+        }
+        else
         {
             newPosX = snake->head->body.x;
             newPosY = snake->head->body.y + snake->head->body.height;
@@ -94,7 +100,8 @@ int UpdateSnakePosition(Snake *snake, const float bounds[4],
         {
             newPosY = snake->head->body.y;
             newPosX = bounds[2] - snake->tail->body.width;
-        } else
+        }
+        else
         {
             newPosY = snake->head->body.y;
             newPosX = snake->head->body.x - snake->head->body.height;
@@ -105,7 +112,8 @@ int UpdateSnakePosition(Snake *snake, const float bounds[4],
         {
             newPosY = snake->head->body.y;
             newPosX = bounds[0];
-        } else
+        }
+        else
         {
             newPosY = snake->head->body.y;
             newPosX = snake->head->body.x + snake->head->body.height;
@@ -143,17 +151,20 @@ bool UpdateSnakeDirection(Snake *snake, const Controls *controls)
         if (snake->direction != UP)
             snake->direction = DOWN;
         return true;
-    } else if (IsKeyPressed(controls->snakeLeft))
+    }
+    else if (IsKeyPressed(controls->snakeLeft))
     {
         if (snake->direction != RIGHT)
             snake->direction = LEFT;
         return true;
-    } else if (IsKeyPressed(controls->snakeRight))
+    }
+    else if (IsKeyPressed(controls->snakeRight))
     {
         if (snake->direction != LEFT)
             snake->direction = RIGHT;
         return true;
-    } else if (IsKeyPressed(controls->snakeUp))
+    }
+    else if (IsKeyPressed(controls->snakeUp))
     {
         if (snake->direction != DOWN)
             snake->direction = UP;
@@ -201,7 +212,7 @@ void UpdateSnake(GameData *gameData)
                                                       : NULL))
         {
             EatApple(&gameData->apple, &gameData->snakePlayer,
-                     &gameData->snakeBlocks[++gameData->blocksCounter]);
+                     &gameData->snakeBlocks[gameData->blocksCounter++]);
 
             if (gameData->blocksCounter == gameData->maxBlocks)
             {
@@ -237,24 +248,19 @@ void ResetGameData(GameData *gameData)
 }
 
 void RestartGame(GameData *gameData) { ResetGameData(gameData); }
-void GameOverScreenLoop(GameData *gameData)
-{
-    while (!WindowShouldClose())
-    {
-        BeginDrawing();
-        DrawText("GAME OVER, press ENTER to restart, ESCAPE for menu",
-                 gameData->gameField.x + gameData->gameField.width * 0.4,
-                 gameData->gameField.y - 25, 25, BANANA);
-        EndDrawing();
 
-        if (IsKeyPressed(KEY_ENTER))
-        {
-            RestartGame(gameData);
-            break;
-        } else if (IsKeyPressed(KEY_ESCAPE))
-        {
-            gameData->GAME_STATE = GAME_MENU;
-            break;
-        }
+void GameStateAlert(GameData *gameData, const char *msg, int screen_h)
+{
+    assert(msg != NULL);
+
+    DrawText(msg, 20, 20, screen_h * 0.05f, BANANA);
+
+    if (IsKeyPressed(KEY_ENTER))
+    {
+        RestartGame(gameData);
+    }
+    else if (IsKeyPressed(KEY_ESCAPE))
+    {
+        gameData->GAME_STATE = GAME_MENU;
     }
 }
