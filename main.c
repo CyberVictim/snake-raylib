@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "apple.h"
+#include "main.h"
 #include "raylib.h"
 
-#include "main.h"
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
 
-#include "apple.h"
 #include "snake.h"
 #include "utils_snake.h"
 
@@ -30,12 +32,16 @@ int main(void)
     printf("----- %d\n", icon.format);
     SetWindowIcon(icon);
 
+    // Init menu struct
+    GameMenu gameMenu;
+    InitGameMenu(&gameMenu, SCREEN_W, SCREEN_H);
+
     // GameData
     GameData gameData;
     InitGameData(&gameData, SCREEN_W, SCREEN_H);
 
 #ifdef DEBUG
-    printf("%d\n", gameData.GAME_STATE);
+    printf("game state number %d\n", gameData.GAME_STATE);
     LogCheckGameRatios(gameData.blockSize, (int)gameData.gameField.width);
 #endif // DEBUG
 
@@ -46,7 +52,7 @@ int main(void)
         switch (gameData.GAME_STATE)
         {
         case GAME_MENU:
-            // init game menu here
+            UpdateDrawMenu(&gameMenu, &gameData);
             break;
 
         case GAME_OVER:
@@ -65,6 +71,7 @@ int main(void)
         case GAME_ON:
             UpdateSnake(&gameData);
             UpdateApple(&gameData);
+            DrawGame(&gameData);
             break;
 #ifndef DEBUG
         default:
@@ -78,27 +85,12 @@ int main(void)
             UpdateGameField((float)GetScreenWidth(), (float)GetScreenHeight(),
                             &gameData.gameField, FIELD_SIZE);
         }
-
-        /* --- Draw --- */
-        BeginDrawing();
-
-        ClearBackground(BACKGROUND_COLOR);
-
-        if (gameData.gameSettingsFlags & SET_SNAKE_SHOW_FPS)
-        {
-            DrawFPS(15, 15);
-        }
-
-        DrawRectangleRec(gameData.gameField, SOFT_GREEN);
-        DrawSnake(&gameData.snakePlayer, SNAKE_BODY_COLOR, SNAKE_HEAD_COLOR);
-
-        if (gameData.appleActive)
-            DrawRectangleRec(gameData.apple, BANANA);
-
-        EndDrawing();
     }
     // Free resources
     MemFree(gameData.snakeBlocks);
+    MemFree(gameMenu.buttonGroup.name);
+    MemFree(gameMenu.bPlay.name);
+    MemFree(gameMenu.bExit.name);
 
     CloseWindow();
     return 0;

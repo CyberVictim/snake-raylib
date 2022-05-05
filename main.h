@@ -27,7 +27,7 @@ extern int logIsAppleInSnake;
     (Color) { 197, 120, 180, 255 }
 #define SNAKE_BODY_COLOR                                                       \
     (Color) { 136, 82, 125, 255 }
-#define BACKGROUND_COLOR                                                       \
+#define SNAKE_BACKGROUND_COLOR                                                 \
     (Color) { 47, 29, 62, 255 }
 
 // Numeric values
@@ -38,7 +38,7 @@ extern int logIsAppleInSnake;
 #define APPLE_SPEED 8.0f           // in seconds
 #define GET_APPLE_MAX_TRIES 100000 // max N of tries to get apple
 #define APPLE_SPEED_FIRST 0.2f     // in seconds
-#define INITIAL_GAME_STATE GAME_ON
+#define INITIAL_GAME_STATE GAME_MENU
 
 // String literals
 #define TITLE (char *)"Snake"
@@ -64,7 +64,6 @@ typedef struct Snake {
     SnakeBlock *head;
     SnakeBlock *tail;
     DIRECTION direction : 3; // 0, 1, 2, 3 (four directions)
-    // SnakeBlock blocks[];
 } Snake;
 
 // Bit flags, actual flag is stored in GameData struct
@@ -81,6 +80,18 @@ typedef struct Controls {
     KeyboardKey exitKeyFirst;
     KeyboardKey exitKeyLast;
 } Controls;
+
+typedef struct ButtonSnake {
+    Rectangle rec;
+    char *name;
+} ButtonSnake;
+
+typedef struct GameMenu {
+    ButtonSnake buttonGroup;
+    ButtonSnake bPlay;
+    ButtonSnake bExit;
+    int fontSize;
+} GameMenu;
 
 typedef struct GameData {
     float dtSnake;

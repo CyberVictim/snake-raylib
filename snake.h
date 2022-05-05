@@ -12,6 +12,9 @@ void InitSnake(Snake *snake, const Rectangle *gameField,
 void DrawSnake(Snake *snake, Color bodyColor, Color headColor);
 int UpdateSnakePosition(Snake *snake, const float bounds[4],
                         const Rectangle *apple);
+void DrawGame(GameData *gameData);
+void InitGameMenu(GameMenu *gameMenu, const int screenW, const int screenH);
+void UpdateDrawMenu(GameMenu *gameMenu, GameData *gameData);
 bool UpdateSnakeDirection(Snake *snake, const Controls *controls);
 void AddSnakeBlock(Rectangle *rec, Snake *snake);
 void EatApple(Rectangle *apple, Snake *snake, SnakeBlock *appleBlock);
