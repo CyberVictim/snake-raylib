@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "apple.h"
@@ -38,6 +40,7 @@ int main(void)
 
     // GameData
     GameData gameData;
+    gameData.alertMsg = NULL; // to be safe
     InitGameData(&gameData, SCREEN_W, SCREEN_H);
 
 #ifdef DEBUG
@@ -56,16 +59,19 @@ int main(void)
             break;
 
         case GAME_OVER:
-            GameStateAlert(&gameData,
-                           "GAME OVER! Press Enter to restart, Escape for menu",
-                           SCREEN_H);
+            if (gameData.alertMsg == NULL)
+            {
+                AllocString(&gameData.alertMsg, "GAME OVER!");
+            }
+            DrawGame(&gameData);
             break;
 
         case GAME_SCREEN_FILLED:
-            GameStateAlert(
-                &gameData,
-                "SNAKE IS FULL! Press Enter to restart, Escape for menu",
-                SCREEN_H);
+            if (gameData.alertMsg == NULL)
+            {
+                AllocString(&gameData.alertMsg, "GAME SCREEN FILLED!");
+            }
+            DrawGame(&gameData);
             break;
 
         case GAME_ON:
@@ -86,11 +92,16 @@ int main(void)
                             &gameData.gameField, FIELD_SIZE);
         }
     }
+
     // Free resources
     MemFree(gameData.snakeBlocks);
     MemFree(gameMenu.buttonGroup.name);
     MemFree(gameMenu.bPlay.name);
     MemFree(gameMenu.bExit.name);
+    if (gameData.alertMsg)
+    {
+        free(gameData.alertMsg);
+    }
 
     CloseWindow();
     return 0;

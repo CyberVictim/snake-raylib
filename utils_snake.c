@@ -4,6 +4,7 @@
 #include "snake.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Relative to the screen
 void UpdateGameField(float screenW, float screenH, Rectangle *gameField,
@@ -50,6 +51,12 @@ void LogCheckGameRatios(int snakeSize, int gameFieldWidth)
     TraceLog(LOG_INFO, "Snake size seems good");
 }
 
+void AllocString(char **ptr, const char *msg)
+{
+    *ptr = malloc(sizeof(char) * (1 + strlen(msg)));
+    strcpy(*ptr, msg);
+}
+
 void InitGameData(GameData *gameData, float SCREEN_W, float SCREEN_H)
 {
     // Init game field in the center of the screen
@@ -57,8 +64,9 @@ void InitGameData(GameData *gameData, float SCREEN_W, float SCREEN_H)
 
     // fixed size blocks per field
     gameData->blockSize = SNAKE_SIZE * (float)gameData->gameField.width;
-    gameData->maxBlocks = ((int)gameData->gameField.width / gameData->blockSize) *
-                    ((int)gameData->gameField.height / gameData->blockSize);
+    gameData->maxBlocks =
+        ((int)gameData->gameField.width / gameData->blockSize) *
+        ((int)gameData->gameField.height / gameData->blockSize);
 
     // Init array of all snake blocks
     gameData->snakeBlocks = MemAlloc(sizeof(SnakeBlock) * gameData->maxBlocks);
@@ -66,7 +74,8 @@ void InitGameData(GameData *gameData, float SCREEN_W, float SCREEN_H)
     // Init mutating gameplay values
     ResetGameData(gameData);
 
-    gameData->apple = (Rectangle){0.0f, 0.0f, gameData->blockSize, gameData->blockSize};
+    gameData->apple =
+        (Rectangle){0.0f, 0.0f, gameData->blockSize, gameData->blockSize};
 
     // init game default settings
     unsigned int defaultGameSettings = SET_SNAKE_SHOW_FPS;

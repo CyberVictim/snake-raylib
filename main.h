@@ -15,6 +15,8 @@ extern int logIsAppleInSnake;
 /* Defines */
 
 // Colors
+#define CYAN_COLOR_S_HEX 0x58bcbc
+#define BROWN_COLOR_S_HEX 0xbc8a58
 #define DARK_MAMBA                                                             \
     (Color) { 139, 120, 143, 255 }
 #define SOFT_RED                                                               \
@@ -41,6 +43,8 @@ extern int logIsAppleInSnake;
 #define INITIAL_GAME_STATE GAME_MENU
 
 // String literals
+#define TITLE (char *)"Snake"
+#define GAME_OVER_MSG (char *)"Snake"
 #define TITLE (char *)"Snake"
 
 // Game entities
@@ -94,6 +98,7 @@ typedef struct GameMenu {
 } GameMenu;
 
 typedef struct GameData {
+    char *alertMsg;
     float dtSnake;
     float dtApple;
     float blockSize;

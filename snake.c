@@ -56,14 +56,7 @@ void InitSnake(Snake *snake, const Rectangle *gameField,
     snake->direction = UP;
 }
 
-void AddSnakeBlock(Rectangle *rec, Snake *snake)
-{
-    SnakeBlock newBlock = {*rec, NULL};
-    snake->head->next = &newBlock;
-    snake->head = &newBlock;
-}
-
-// hacky snake movement, the tail jumps to the next position
+// snake movement, the tail jumps to the next position
 int UpdateSnakePosition(Snake *snake, const float bounds[4],
                         const Rectangle *apple)
 {
@@ -195,12 +188,12 @@ void DrawSnake(Snake *snake, Color bodyColor, Color headColor)
 // Update snakePlayer
 void UpdateSnake(GameData *gameData)
 {
-    // Process snake movement
     gameData->dtSnake += GetFrameTime();
+
+    // if enough time has passed or button has been pressed
     if (UpdateSnakeDirection(&gameData->snakePlayer, &gameData->CONTROLS) ||
         gameData->dtSnake >= SNAKE_SPEED)
     {
-
         gameData->dtSnake = 0.0f;
         float Fieldbounds[4];
         GetBounds(gameData->gameField, Fieldbounds);
@@ -213,6 +206,7 @@ void UpdateSnake(GameData *gameData)
             EatApple(&gameData->apple, &gameData->snakePlayer,
                      &gameData->snakeBlocks[gameData->blocksCounter++]);
 
+            // if snake filled the whole game screen
             if (gameData->blocksCounter == gameData->maxBlocks)
             {
                 gameData->GAME_STATE = GAME_SCREEN_FILLED;
@@ -224,8 +218,6 @@ void UpdateSnake(GameData *gameData)
             gameData->appleActive = false;
             gameData->dtApple = APPLE_SPEED - APPLE_SPEED_FIRST;
         }
-
-        // Snake hit itself
         if (SnakeHitItself(&gameData->snakePlayer))
         {
             gameData->GAME_STATE = GAME_OVER;
@@ -240,7 +232,7 @@ void UpdateDrawMenu(GameMenu *gameMenu, GameData *gameData)
 {
     BeginDrawing();
 
-    ClearBackground(GetColor(0x58bcbc));
+    ClearBackground(GetColor(CYAN_COLOR_S_HEX));
     GuiSetStyle(0, TEXT_SIZE, gameMenu->fontSize);
 
     char *groupTxt = gameMenu->buttonGroup.name;
@@ -269,6 +261,11 @@ void UpdateDrawMenu(GameMenu *gameMenu, GameData *gameData)
 
 void ResetGameData(GameData *gameData)
 {
+    if (gameData->alertMsg)
+    {
+        free(gameData->alertMsg);
+    }
+    gameData->alertMsg = NULL;
     gameData->GAME_STATE = INITIAL_GAME_STATE;
     gameData->appleActive = false;
     gameData->dtApple = APPLE_SPEED - APPLE_SPEED_FIRST;
@@ -322,8 +319,6 @@ void DrawGame(GameData *gameData)
 {
     BeginDrawing();
 
-    ClearBackground(SNAKE_BACKGROUND_COLOR);
-
     if (gameData->gameSettingsFlags & SET_SNAKE_SHOW_FPS)
     {
         DrawFPS(15, 15);
@@ -331,6 +326,7 @@ void DrawGame(GameData *gameData)
     switch (gameData->GAME_STATE)
     {
     case GAME_ON:
+        ClearBackground(SNAKE_BACKGROUND_COLOR);
         DrawRectangleRec(gameData->gameField, SOFT_GREEN);
         DrawSnake(&gameData->snakePlayer, SNAKE_BODY_COLOR, SNAKE_HEAD_COLOR);
 
@@ -342,9 +338,25 @@ void DrawGame(GameData *gameData)
         break;
 
     case GAME_OVER:
-        break;
-
     case GAME_SCREEN_FILLED:
+        ClearBackground(GetColor(BROWN_COLOR_S_HEX));
+
+        float bigFontSize = gameData->gameField.height * 0.1f;
+        DrawText(gameData->alertMsg, gameData->gameField.width * 0.2f, 20,
+                 bigFontSize, BANANA);
+
+        DrawText("Press ENTER to restart, ESCAPE for menu", 20,
+                 bigFontSize + 30, gameData->gameField.height * 0.06f,
+                 SOFT_RED);
+
+        if (IsKeyPressed(KEY_ENTER))
+        {
+            RestartGame(gameData);
+        }
+        else if (IsKeyPressed(KEY_ESCAPE))
+        {
+            ResetGameData(gameData);
+        }
         break;
 
     default:
@@ -354,20 +366,8 @@ void DrawGame(GameData *gameData)
     EndDrawing();
 }
 
-void RestartGame(GameData *gameData) { ResetGameData(gameData); }
-
-void GameStateAlert(GameData *gameData, const char *msg, int screen_h)
+void RestartGame(GameData *gameData)
 {
-    assert(msg != NULL);
-
-    DrawText(msg, 20, 20, screen_h * 0.05f, BANANA);
-
-    if (IsKeyPressed(KEY_ENTER))
-    {
-        RestartGame(gameData);
-    }
-    else if (IsKeyPressed(KEY_ESCAPE))
-    {
-        gameData->GAME_STATE = GAME_MENU;
-    }
+    ResetGameData(gameData);
+    gameData->GAME_STATE = GAME_ON;
 }

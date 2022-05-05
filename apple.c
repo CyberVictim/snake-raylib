@@ -26,24 +26,31 @@ static void GetApple(Rectangle *apple, const Rectangle *gameField)
 
 void UpdateApple(GameData *gameData)
 {
-    // Update apple
     gameData->dtApple += GetFrameTime();
+
+    // if enough time has passed
     if ((gameData->dtApple >= APPLE_SPEED &&
-         gameData->GAME_STATE != GAME_SCREEN_FILLED) ||
-        IsKeyPressed(KEY_Q))
+         gameData->GAME_STATE != GAME_SCREEN_FILLED))
     {
+        // pause time if we don't find apple in this frame
         gameData->dtApple = APPLE_SPEED - 0.1f;
         bool appleInSnake = true;
         gameData->appleActive = false;
-        // Limit the calculation by max N tries per cycle
+
+        // get random position and check collisions
+        // limit the calculation by max N tries per cycle
         for (int i = 0; i < GET_APPLE_MAX_TRIES; i++)
         {
             GetApple(&gameData->apple, &gameData->gameField);
             appleInSnake =
                 IsRecInSnake(&gameData->apple, &gameData->snakePlayer);
+
 #ifdef DEBUG
+            // counting the number of function calls
             logIsAppleInSnake++;
 #endif // DEBUG
+
+            // if found valid apple coordinates
             if (!appleInSnake)
             {
                 gameData->dtApple = 0.0f;
