@@ -33,18 +33,16 @@ extern int logIsAppleInSnake;
     (Color) { 47, 29, 62, 255 }
 
 // Numeric values
-#define MAX_FPS 120
-#define FIELD_SIZE 0.8f            // % of the screen
-#define SNAKE_SIZE 0.25f           // % of the screen
-#define SNAKE_SPEED 1.0f           // in seconds
-#define APPLE_SPEED 8.0f           // in seconds
+#define MAX_FPS 60
+#define FIELD_SIZE 0.8f   // % of the screen
+#define SNAKE_SIZE 0.125f // % of the screen
+#define SNAKE_SPEED 1.0f  // time passed before snake moves in seconds
+#define APPLE_SPEED 8.0f  // time passed before new apple spawn in seconds
 #define GET_APPLE_MAX_TRIES 100000 // max N of tries to get apple
 #define APPLE_SPEED_FIRST 0.2f     // in seconds
 #define INITIAL_GAME_STATE GAME_MENU
 
 // String literals
-#define TITLE (char *)"Snake"
-#define GAME_OVER_MSG (char *)"Snake"
 #define TITLE (char *)"Snake"
 
 // Game entities
@@ -54,6 +52,7 @@ typedef enum DIRECTION { UP, DOWN, LEFT, RIGHT } DIRECTION;
 typedef enum SnakeGameState {
     GAME_OVER,
     GAME_ON,
+    GAME_MENU_SETTINGS,
     GAME_MENU,
     GAME_SCREEN_FILLED,
     GAME_EXIT
@@ -93,9 +92,22 @@ typedef struct ButtonSnake {
 typedef struct GameMenu {
     ButtonSnake buttonGroup;
     ButtonSnake bPlay;
+    ButtonSnake bSettings;
     ButtonSnake bExit;
     int fontSize;
 } GameMenu;
+
+typedef struct SettingsMenu {
+    ButtonSnake group;
+    ButtonSnake changeResolution;
+    ButtonSnake changeResValues;
+    ButtonSnake setSnakeUp;
+    ButtonSnake setSnakeDown;
+    ButtonSnake setSnakeRight;
+    ButtonSnake setSnakeLeft;
+    ButtonSnake checkFullScreen;
+    ButtonSnake checkFPS;
+} SettingsMenu;
 
 typedef struct GameData {
     char *alertMsg;

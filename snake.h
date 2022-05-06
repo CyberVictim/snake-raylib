@@ -9,12 +9,10 @@ void RestartGame(GameData *gameData);
 
 void InitSnake(Snake *snake, const Rectangle *gameField,
                const int snakeBlockSize, SnakeBlock *snakeBlock);
-void InitGameMenu(GameMenu *gameMenu, const int screenW, const int screenH);
 
 void DrawSnake(Snake *snake, Color bodyColor, Color headColor);
 void DrawGame(GameData *gameData);
 
-void UpdateDrawMenu(GameMenu *gameMenu, GameData *gameData);
 void UpdateSnake(GameData *gameData);
 int UpdateSnakePosition(Snake *snake, const float bounds[4],
                         const Rectangle *apple);

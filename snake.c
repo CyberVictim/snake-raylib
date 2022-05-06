@@ -228,36 +228,6 @@ void UpdateSnake(GameData *gameData)
     }
 }
 
-void UpdateDrawMenu(GameMenu *gameMenu, GameData *gameData)
-{
-    BeginDrawing();
-
-    ClearBackground(GetColor(CYAN_COLOR_S_HEX));
-    GuiSetStyle(0, TEXT_SIZE, gameMenu->fontSize);
-
-    char *groupTxt = gameMenu->buttonGroup.name;
-    GuiGroupBox(gameMenu->buttonGroup.rec, groupTxt);
-
-    // play button
-    if (GuiButton(gameMenu->bPlay.rec, gameMenu->bPlay.name))
-    {
-        gameData->GAME_STATE = GAME_ON;
-    }
-
-    // settings button TODO
-    // if (GuiButton(gameMenu->bSettings.rec, gameMenu->bSettings.name))
-    // {
-    //     // settings code
-    // }
-
-    // exit button
-    if (GuiButton(gameMenu->bExit.rec, gameMenu->bExit.name))
-    {
-        gameData->GAME_STATE = GAME_EXIT;
-    }
-
-    EndDrawing();
-}
 
 void ResetGameData(GameData *gameData)
 {
@@ -275,45 +245,6 @@ void ResetGameData(GameData *gameData)
               &gameData->snakeBlocks[gameData->blocksCounter++]);
 }
 
-// create rectangles needed to draw menu gui(raygui)
-// allocates memory using raylib MemAlloc
-void InitGameMenu(GameMenu *gameMenu, const int screenW, const int screenH)
-{
-    gameMenu->fontSize = (int)(screenH * 0.05f);
-
-    char menuS[] = "MENU";
-    char playS[] = "Play";
-    char exitS[] = "Exit";
-
-    char *pMenuS = MemAlloc(sizeof(menuS));
-    char *pPlayS = MemAlloc(sizeof(playS));
-    char *pExitS = MemAlloc(sizeof(exitS));
-    strcpy(pMenuS, menuS);
-    strcpy(pPlayS, playS);
-    strcpy(pExitS, exitS);
-
-    gameMenu->buttonGroup.rec = (Rectangle){screenW * 0.05f, screenH * 0.05f,
-                                            screenW * 0.4f, screenH * 0.9f};
-    gameMenu->buttonGroup.name = pMenuS;
-
-    //  button values
-    float bWidth = gameMenu->buttonGroup.rec.width * 0.8f;
-    float bHeight = gameMenu->buttonGroup.rec.height * 0.2f;
-    float posX = gameMenu->buttonGroup.rec.x +
-                 (gameMenu->buttonGroup.rec.width - bWidth) * 0.5f;
-    float posY = gameMenu->buttonGroup.rec.y + gameMenu->fontSize;
-
-    // padding between buttons
-    float pad = 5.0f + bHeight;
-
-    // init play button
-    gameMenu->bPlay.rec = (Rectangle){posX, posY, bWidth, bHeight};
-    gameMenu->bPlay.name = pPlayS;
-
-    // init exit button
-    gameMenu->bExit.rec = (Rectangle){posX, posY + pad, bWidth, bHeight};
-    gameMenu->bExit.name = pExitS;
-}
 
 void DrawGame(GameData *gameData)
 {

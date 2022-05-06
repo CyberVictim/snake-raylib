@@ -38,6 +38,10 @@ int main(void)
     GameMenu gameMenu;
     InitGameMenu(&gameMenu, SCREEN_W, SCREEN_H);
 
+    // init settings menu
+    SettingsMenu settingsMenu;
+    InitSettingsMenu(&settingsMenu, SCREEN_W, SCREEN_H);
+
     // GameData
     GameData gameData;
     gameData.alertMsg = NULL; // to be safe
@@ -56,6 +60,10 @@ int main(void)
         {
         case GAME_MENU:
             UpdateDrawMenu(&gameMenu, &gameData);
+            break;
+
+        case GAME_MENU_SETTINGS:
+            UpdateDrawMenuSettings(&gameMenu, &gameData);
             break;
 
         case GAME_OVER:
