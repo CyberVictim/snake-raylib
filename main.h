@@ -55,6 +55,7 @@ typedef enum SnakeGameState {
     GAME_MENU_SETTINGS,
     GAME_MENU,
     GAME_SCREEN_FILLED,
+    GAME_SET_CONTROLS,
     GAME_EXIT
 } SnakeGameState;
 
@@ -82,6 +83,7 @@ typedef struct Controls {
     KeyboardKey snakeRight;
     KeyboardKey exitKeyFirst;
     KeyboardKey exitKeyLast;
+    KeyboardKey *changedKey;
 } Controls;
 
 typedef struct ButtonSnake {
@@ -99,6 +101,7 @@ typedef struct GameMenu {
 
 typedef struct SettingsMenu {
     ButtonSnake group;
+    ButtonSnake groupControls;
     ButtonSnake changeResolution;
     ButtonSnake changeResValues;
     ButtonSnake setSnakeUp;
@@ -107,6 +110,12 @@ typedef struct SettingsMenu {
     ButtonSnake setSnakeLeft;
     ButtonSnake checkFullScreen;
     ButtonSnake checkFPS;
+    ButtonSnake save;
+    int changeResBoxValue;
+    bool changeResEditMode;
+    bool checkFPSBool;
+    bool checkFullScreenBool;
+    int fontSize;
 } SettingsMenu;
 
 typedef struct GameData {

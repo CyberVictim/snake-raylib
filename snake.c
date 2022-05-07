@@ -228,13 +228,9 @@ void UpdateSnake(GameData *gameData)
     }
 }
 
-
 void ResetGameData(GameData *gameData)
 {
-    if (gameData->alertMsg)
-    {
-        free(gameData->alertMsg);
-    }
+    free(gameData->alertMsg);
     gameData->alertMsg = NULL;
     gameData->GAME_STATE = INITIAL_GAME_STATE;
     gameData->appleActive = false;
@@ -245,15 +241,15 @@ void ResetGameData(GameData *gameData)
               &gameData->snakeBlocks[gameData->blocksCounter++]);
 }
 
-
 void DrawGame(GameData *gameData)
 {
     BeginDrawing();
 
-    if (gameData->gameSettingsFlags & SET_SNAKE_SHOW_FPS)
-    {
-        DrawFPS(15, 15);
-    }
+    // if (gameData->gameSettingsFlags & SET_SNAKE_SHOW_FPS)
+    // {
+    //     DrawFPS(15, 15);
+    // }
+
     switch (gameData->GAME_STATE)
     {
     case GAME_ON:

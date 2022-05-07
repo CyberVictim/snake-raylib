@@ -5,13 +5,13 @@
 
 #include "apple.h"
 #include "main.h"
+#include "menu.h"
 #include "raylib.h"
+#include "snake.h"
+#include "utils_snake.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
-
-#include "snake.h"
-#include "utils_snake.h"
 
 #ifdef DEBUG
 int logIsAppleInSnake = 0;
@@ -56,6 +56,12 @@ int main(void)
     while (!WindowShouldClose() && gameData.GAME_STATE != GAME_EXIT)
     {
         CheckExitInput(&gameData);
+
+        if (gameData.gameSettingsFlags & SET_SNAKE_SHOW_FPS)
+        {
+            DrawFPS(15, 15);
+        }
+
         switch (gameData.GAME_STATE)
         {
         case GAME_MENU:
@@ -63,7 +69,12 @@ int main(void)
             break;
 
         case GAME_MENU_SETTINGS:
-            UpdateDrawMenuSettings(&gameMenu, &gameData);
+            UpdateDrawMenuSettings(&settingsMenu, &gameData);
+            break;
+
+        case GAME_SET_CONTROLS:
+            ReadUpdateControls(&gameData.GAME_STATE,
+                               gameData.CONTROLS.changedKey);
             break;
 
         case GAME_OVER:
@@ -102,14 +113,12 @@ int main(void)
     }
 
     // Free resources
+    FreeSettingsMenu(&settingsMenu);
     MemFree(gameData.snakeBlocks);
     MemFree(gameMenu.buttonGroup.name);
     MemFree(gameMenu.bPlay.name);
     MemFree(gameMenu.bExit.name);
-    if (gameData.alertMsg)
-    {
-        free(gameData.alertMsg);
-    }
+    free(gameData.alertMsg);
 
     CloseWindow();
     return 0;
