@@ -6,16 +6,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-void UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData)
+int UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData)
 {
+    // result > -1 if apply button was pressed
+    int result = -1;
+
     BeginDrawing();
 
     ClearBackground(SNAKE_BACKGROUND_COLOR);
 
-    if (GetKeyPressed() == KEY_ESCAPE)
-    {
-        gameData->GAME_STATE = GAME_MENU;
-    }
+    // if (GetKeyPressed() == KEY_ESCAPE)
+    // {
+    //     gameData->GAME_STATE = GAME_MENU;
+    // }
 
     // lock gui if dropdown box is active
     menu->changeResEditMode ? GuiLock() : GuiUnlock();
@@ -103,37 +106,8 @@ void UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData)
         menu->checkFPSBool
             ? (gameData->gameSettingsFlags |= SET_SNAKE_SHOW_FPS)
             : (gameData->gameSettingsFlags &= ~SET_SNAKE_SHOW_FPS);
-        // if (menu->checkFPSBool)
-        // {
-        //     gameData->gameSettingsFlags |= SET_SNAKE_SHOW_FPS;
-        // }
-        // else
-        // {
-        //     gameData->gameSettingsFlags &= ~SET_SNAKE_SHOW_FPS;
-        // }
 
-        // apply resolution
-        switch (menu->changeResBoxValue)
-        {
-        case 0:
-            SetWindowSize(800, 600);
-            break;
-
-        case 1:
-            SetWindowSize(1280, 720);
-            break;
-
-        case 2:
-            SetWindowSize(1600, 900);
-            break;
-
-        case 3:
-            SetWindowSize(1920, 1080);
-            break;
-
-        default:
-            break;
-        }
+        result = menu->changeResBoxValue;
     }
 
     // has to be drawn after the elements
@@ -145,12 +119,79 @@ void UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData)
     }
 
     EndDrawing();
+
+    return result;
 }
 
-void InitSettingsMenu(SettingsMenu *settingsMenu, const int SCREEN_W,
-                      const int SCREEN_H)
+void UpdateSettingsMenuButtons(SettingsMenu *menu)
 {
-    settingsMenu->fontSize = (int)(SCREEN_H * 0.04f);
+    const int SCREEN_W = GetScreenHeight();
+    const int SCREEN_H = GetScreenHeight();
+
+    menu->fontSize = (int)(SCREEN_H * 0.04f);
+
+    // init group area where all buttons go
+    menu->group.rec = (Rectangle){SCREEN_W * 0.02f, SCREEN_H * 0.03f,
+                                  SCREEN_W * 0.95f, SCREEN_H * 0.95f};
+
+    // button values
+    float butWidth = menu->group.rec.width * 0.6f;
+    float butWSmall = menu->group.rec.width * 0.2f;
+    float butHeight = menu->group.rec.height * 0.125f;
+    float checkBoxHeight = butHeight * 0.5f;
+    float posX = menu->group.rec.x + menu->group.rec.width * 0.02f;
+    float posY = menu->group.rec.y + (float)(menu->fontSize);
+    // padding between buttons
+    float pad = SCREEN_W * 0.05f;
+    float paddingX = pad + butWSmall;
+    float paddingY = pad + butHeight;
+
+    // first row taking two columns
+    // init change resolution label and dropbox with values
+    menu->changeResolution.rec =
+        (Rectangle){posX, posY, butWidth * 0.8f, butHeight};
+    menu->changeResValues.rec =
+        (Rectangle){posX + menu->changeResolution.rec.width + pad, posY,
+                    butWSmall * 1.2f, butHeight};
+
+    // second row, two columns
+    menu->checkFPS.rec =
+        (Rectangle){posX, posY + paddingY, checkBoxHeight, checkBoxHeight};
+    menu->checkFullScreen.rec = (Rectangle){posX + paddingX, posY + paddingY,
+                                            checkBoxHeight, checkBoxHeight};
+
+    // third row taking four columns
+    // inner group
+    menu->groupControls.rec =
+        (Rectangle){menu->group.rec.x + menu->group.rec.width * 0.005f,
+                    posY + 2.0f * paddingY, menu->group.rec.width * 0.99f,
+                    butHeight * 1.3f};
+
+    float controlsPosX = posX + menu->groupControls.rec.x * 0.01f;
+    float controlsPosY = menu->groupControls.rec.y + (float)menu->fontSize;
+
+    menu->setSnakeUp.rec =
+        (Rectangle){controlsPosX, controlsPosY, butWSmall, butHeight * 0.6f};
+
+    menu->setSnakeDown.rec = (Rectangle){controlsPosX + paddingX, controlsPosY,
+                                         butWSmall, butHeight * 0.6f};
+
+    menu->setSnakeRight.rec =
+        (Rectangle){controlsPosX + 2.0f * paddingX, controlsPosY, butWSmall,
+                    butHeight * 0.6f};
+
+    menu->setSnakeLeft.rec =
+        (Rectangle){controlsPosX + 3.0f * paddingX, controlsPosY, butWSmall,
+                    butHeight * 0.6f};
+
+    // fourth row
+    menu->save.rec =
+        (Rectangle){posX + menu->group.rec.width * 0.3f, posY + paddingY * 3.0f,
+                    butWSmall * 1.3f, butHeight};
+}
+
+void InitSettingsMenu(SettingsMenu *settingsMenu)
+{
     settingsMenu->changeResEditMode = false;
     settingsMenu->changeResBoxValue = 0;
     settingsMenu->checkFPSBool = false;
@@ -180,80 +221,19 @@ void InitSettingsMenu(SettingsMenu *settingsMenu, const int SCREEN_W,
     AllocString(&checkFullScreen, "Toggle Fullscreen");
     AllocString(&group, "SETTINGS");
 
-    // init group area where all buttons go
-    settingsMenu->group.rec = (Rectangle){SCREEN_W * 0.02f, SCREEN_H * 0.03f,
-                                          SCREEN_W * 0.95f, SCREEN_H * 0.95f};
-    settingsMenu->group.name = group;
-
-    // button values
-    float butWidth = settingsMenu->group.rec.width * 0.6f;
-    float butWSmall = settingsMenu->group.rec.width * 0.2f;
-    float butHeight = settingsMenu->group.rec.height * 0.125f;
-    float checkBoxHeight = butHeight * 0.5f;
-    float posX =
-        settingsMenu->group.rec.x + settingsMenu->group.rec.width * 0.02f;
-    float posY = settingsMenu->group.rec.y + (float)(settingsMenu->fontSize);
-    // padding between buttons
-    float pad = SCREEN_W * 0.05f;
-    float paddingX = pad + butWSmall;
-    float paddingY = pad + butHeight;
-
-    // first row taking two columns
-    // init change resolution label and dropbox with values
-    settingsMenu->changeResolution.rec =
-        (Rectangle){posX, posY, butWidth * 0.8f, butHeight};
-    settingsMenu->changeResolution.name = changeRes;
-
-    settingsMenu->changeResValues.rec =
-        (Rectangle){posX + settingsMenu->changeResolution.rec.width + pad, posY,
-                    butWSmall * 1.2f, butHeight};
     settingsMenu->changeResValues.name = changeResValues;
-
-    // second row, two columns
-
-    settingsMenu->checkFPS.rec =
-        (Rectangle){posX, posY + paddingY, checkBoxHeight, checkBoxHeight};
-    settingsMenu->checkFPS.name = checkFPS;
-
-    settingsMenu->checkFullScreen.rec = (Rectangle){
-        posX + paddingX, posY + paddingY, checkBoxHeight, checkBoxHeight};
+    settingsMenu->group.name = group;
+    settingsMenu->changeResolution.name = changeRes;
+    settingsMenu->setSnakeLeft.name = setSnakeLeft;
     settingsMenu->checkFullScreen.name = checkFullScreen;
-
-    // third row taking four columns
-    // inner group
-    settingsMenu->groupControls.rec = (Rectangle){
-        settingsMenu->group.rec.x + settingsMenu->group.rec.width * 0.005f,
-        posY + 2.0f * paddingY, settingsMenu->group.rec.width * 0.99f,
-        butHeight * 1.3f};
-    settingsMenu->groupControls.name = groupControls;
-
-    float controlsPosX = posX + settingsMenu->groupControls.rec.x * 0.01f;
-    float controlsPosY =
-        settingsMenu->groupControls.rec.y + (float)settingsMenu->fontSize;
-
-    settingsMenu->setSnakeUp.rec =
-        (Rectangle){controlsPosX, controlsPosY, butWSmall, butHeight * 0.6f};
     settingsMenu->setSnakeUp.name = setSnakeUp;
-
-    settingsMenu->setSnakeDown.rec = (Rectangle){
-        controlsPosX + paddingX, controlsPosY, butWSmall, butHeight * 0.6f};
+    settingsMenu->checkFPS.name = checkFPS;
+    settingsMenu->setSnakeRight.name = setSnakeRight;
+    settingsMenu->groupControls.name = groupControls;
+    settingsMenu->save.name = save;
     settingsMenu->setSnakeDown.name = setSnakeDown;
 
-    settingsMenu->setSnakeRight.rec =
-        (Rectangle){controlsPosX + 2.0f * paddingX, controlsPosY, butWSmall,
-                    butHeight * 0.6f};
-    settingsMenu->setSnakeRight.name = setSnakeRight;
-
-    settingsMenu->setSnakeLeft.rec =
-        (Rectangle){controlsPosX + 3.0f * paddingX, controlsPosY, butWSmall,
-                    butHeight * 0.6f};
-    settingsMenu->setSnakeLeft.name = setSnakeLeft;
-
-    // fourth row
-    settingsMenu->save.rec =
-        (Rectangle){posX + settingsMenu->group.rec.width * 0.3f,
-                    posY + paddingY * 3.0f, butWSmall * 1.3f, butHeight};
-    settingsMenu->save.name = save;
+    UpdateSettingsMenuButtons(settingsMenu);
 }
 
 // draw immediate gui of main menu
@@ -284,62 +264,87 @@ void UpdateDrawMenu(GameMenu *gameMenu, GameData *gameData)
     EndDrawing();
 }
 
-// create rectangles needed to draw menu gui(raygui)
-// allocates memory using raylib MemAlloc
-void InitGameMenu(GameMenu *gameMenu, const int screenW, const int screenH)
+void UpdateGameMenuButtons(GameMenu *menu)
 {
-    gameMenu->fontSize = (int)(screenH * 0.05f);
+    const int screenW = GetScreenWidth();
+    const int screenH = GetScreenHeight();
 
-    char menuS[] = "MENU";
-    char playS[] = "Play";
-    char exitS[] = "Exit";
-    char settingsS[] = "Settings";
-
-    char *pMenuS = MemAlloc(sizeof(menuS));
-    char *pPlayS = MemAlloc(sizeof(playS));
-    char *pExitS = MemAlloc(sizeof(exitS));
-    char *pSettingsS = MemAlloc(sizeof(settingsS));
-    strcpy(pMenuS, menuS);
-    strcpy(pPlayS, playS);
-    strcpy(pExitS, exitS);
-    strcpy(pSettingsS, settingsS);
+    menu->fontSize = (int)(screenH * 0.05f);
 
     // init group where all buttons go
-    gameMenu->buttonGroup.rec = (Rectangle){screenW * 0.05f, screenH * 0.05f,
-                                            screenW * 0.4f, screenH * 0.9f};
-    gameMenu->buttonGroup.name = pMenuS;
+    menu->buttonGroup.rec = (Rectangle){screenW * 0.05f, screenH * 0.05f,
+                                        screenW * 0.4f, screenH * 0.9f};
 
     //  button values
-    float bWidth = gameMenu->buttonGroup.rec.width * 0.8f;
-    float bHeight = gameMenu->buttonGroup.rec.height * 0.2f;
-    float posX = gameMenu->buttonGroup.rec.x +
-                 (gameMenu->buttonGroup.rec.width - bWidth) * 0.5f;
-    float posY = gameMenu->buttonGroup.rec.y + gameMenu->fontSize;
+    float bWidth = menu->buttonGroup.rec.width * 0.8f;
+    float bHeight = menu->buttonGroup.rec.height * 0.2f;
+    float posX =
+        menu->buttonGroup.rec.x + (menu->buttonGroup.rec.width - bWidth) * 0.5f;
+    float posY = menu->buttonGroup.rec.y + menu->fontSize;
 
     // padding between buttons
     float pad = 5.0f + bHeight;
 
     // first row, play button
-    gameMenu->bPlay.rec = (Rectangle){posX, posY, bWidth, bHeight};
-    gameMenu->bPlay.name = pPlayS;
+    menu->bPlay.rec = (Rectangle){posX, posY, bWidth, bHeight};
 
     // second row, settings button
-    gameMenu->bSettings.rec = (Rectangle){posX, posY + pad, bWidth, bHeight};
-    gameMenu->bSettings.name = pSettingsS;
+    menu->bSettings.rec = (Rectangle){posX, posY + pad, bWidth, bHeight};
 
     // third row, exit button
-    gameMenu->bExit.rec = (Rectangle){posX, posY + pad * 2.0f, bWidth, bHeight};
-    gameMenu->bExit.name = pExitS;
+    menu->bExit.rec = (Rectangle){posX, posY + pad * 2.0f, bWidth, bHeight};
+}
+
+// create rectangles needed to draw menu gui(raygui)
+// allocates memory using raylib MemAlloc
+void InitGameMenu(GameMenu *gameMenu)
+{
+    // char menuS[] = "MENU";
+    // char playS[] = "Play";
+    // char exitS[] = "Exit";
+    // char settingsS[] = "Settings";
+
+    char *menu;
+    // = MemAlloc(sizeof(menuS));
+    char *play;
+    // = MemAlloc(sizeof(playS));
+    char *exit;
+    // = MemAlloc(sizeof(exitS));
+    char *settings;
+    // = MemAlloc(sizeof(settingsS));
+    // strcpy(menu, menuS);
+    // strcpy(play, playS);
+    // strcpy(exit, exitS);
+    // strcpy(settings, settingsS);
+
+    AllocString(&menu, "MENU");
+    AllocString(&play, "Play");
+    AllocString(&exit, "Exit");
+    AllocString(&settings, "Settings");
+
+    gameMenu->buttonGroup.name = menu;
+    gameMenu->bPlay.name = play;
+    gameMenu->bSettings.name = settings;
+    gameMenu->bExit.name = exit;
+
+    UpdateGameMenuButtons(gameMenu);
+}
+void FreeGameMenu(GameMenu *gameMenu)
+{
+    MemFree(gameMenu->buttonGroup.name);
+    MemFree(gameMenu->bPlay.name);
+    MemFree(gameMenu->bExit.name);
+    MemFree(gameMenu->bSettings.name);
 }
 
 void FreeSettingsMenu(SettingsMenu *settingsMenu)
 {
     free(settingsMenu->changeResolution.name);
-    free(settingsMenu->groupControls.name);
     free(settingsMenu->changeResValues.name);
+    free(settingsMenu->groupControls.name);
+    free(settingsMenu->group.name);
     free(settingsMenu->checkFPS.name);
     free(settingsMenu->checkFullScreen.name);
-    free(settingsMenu->group.name);
     free(settingsMenu->setSnakeDown.name);
     free(settingsMenu->setSnakeLeft.name);
     free(settingsMenu->setSnakeRight.name);

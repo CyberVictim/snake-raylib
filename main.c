@@ -36,16 +36,16 @@ int main(void)
 
     // Init menu struct
     GameMenu gameMenu;
-    InitGameMenu(&gameMenu, SCREEN_W, SCREEN_H);
+    InitGameMenu(&gameMenu);
 
     // init settings menu
     SettingsMenu settingsMenu;
-    InitSettingsMenu(&settingsMenu, SCREEN_W, SCREEN_H);
+    InitSettingsMenu(&settingsMenu);
 
     // GameData
     GameData gameData;
-    gameData.alertMsg = NULL; // to be safe
-    InitGameData(&gameData, SCREEN_W, SCREEN_H);
+    gameData.alertMsg = NULL;
+    InitGameData(&gameData);
 
 #ifdef DEBUG
     printf("game state number %d\n", gameData.GAME_STATE);
@@ -55,7 +55,13 @@ int main(void)
     // Game loop
     while (!WindowShouldClose() && gameData.GAME_STATE != GAME_EXIT)
     {
-        CheckExitInput(&gameData);
+#ifdef DEBUG
+        DrawText(TextFormat("%dx%d", GetScreenWidth(), GetScreenHeight()), 15,
+                 30, 10, BANANA);
+#endif // DEBUG
+        CheckExitInput(&gameData.GAME_STATE, gameData.CONTROLS.exitKeyFirst,
+                       gameData.CONTROLS.exitKeyLast);
+        CheckMenuInput(&gameData.GAME_STATE);
 
         if (gameData.gameSettingsFlags & SET_SNAKE_SHOW_FPS)
         {
@@ -69,7 +75,12 @@ int main(void)
             break;
 
         case GAME_MENU_SETTINGS:
-            UpdateDrawMenuSettings(&settingsMenu, &gameData);
+            int resolutionId = UpdateDrawMenuSettings(&settingsMenu, &gameData);
+            if (resolutionId > -1)
+            {
+                UpdateResolution(&gameData, &gameMenu, &settingsMenu,
+                                 resolutionId);
+            }
             break;
 
         case GAME_SET_CONTROLS:
@@ -103,21 +114,12 @@ int main(void)
             break;
 #endif // !DEBUG
         }
-
-        // Handle resize, unfinished
-        if (IsWindowResized())
-        {
-            UpdateGameField((float)GetScreenWidth(), (float)GetScreenHeight(),
-                            &gameData.gameField, FIELD_SIZE);
-        }
     }
 
     // Free resources
     FreeSettingsMenu(&settingsMenu);
+    FreeGameMenu(&gameMenu);
     MemFree(gameData.snakeBlocks);
-    MemFree(gameMenu.buttonGroup.name);
-    MemFree(gameMenu.bPlay.name);
-    MemFree(gameMenu.bExit.name);
     free(gameData.alertMsg);
 
     CloseWindow();

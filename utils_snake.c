@@ -1,17 +1,20 @@
-#include "utils_snake.h"
-#include "main.h"
-#include "raylib.h"
-#include "snake.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "main.h"
+#include "menu.h"
+#include "raylib.h"
+#include "snake.h"
+#include "utils_snake.h"
+
 // Relative to the screen
-void UpdateGameField(float screenW, float screenH, Rectangle *gameField,
-                     float field_size)
+void UpdateGameField(Rectangle *gameField, const float snakeSize)
 {
-    gameField->width = screenW * field_size;
-    gameField->height = screenH * field_size;
+    int screenW = GetScreenWidth();
+    int screenH = GetScreenHeight();
+
+    gameField->width = gameField->height = FIELD_SIZE * snakeSize;
     gameField->x = (screenW - gameField->width) * 0.5f;
     gameField->y = (screenH - gameField->height) * 0.5f;
 }
@@ -27,13 +30,13 @@ int GetBounds(Rectangle rec, float buf[4])
     return 0;
 }
 
-void CheckExitInput(GameData *gameData)
+void CheckExitInput(SnakeGameState *state, const KeyboardKey firstExitkey,
+                    const KeyboardKey lastExitKey)
 {
     // Set exit combination
-    if (IsKeyDown(gameData->CONTROLS.exitKeyFirst) &&
-        IsKeyDown(gameData->CONTROLS.exitKeyLast))
+    if (IsKeyDown(firstExitkey) && IsKeyDown(lastExitKey))
     {
-        gameData->GAME_STATE = GAME_EXIT;
+        *state = GAME_EXIT;
     }
 }
 
@@ -57,18 +60,94 @@ void AllocString(char **ptr, const char *msg)
     strcpy(*ptr, msg);
 }
 
-void InitGameData(GameData *gameData, float SCREEN_W, float SCREEN_H)
+void CheckMenuInput(SnakeGameState *state)
 {
-    // Init game field in the center of the screen
-    UpdateGameField(SCREEN_W, SCREEN_H, &gameData->gameField, FIELD_SIZE);
+    if (IsKeyPressed(KEY_ESCAPE))
+    {
+        switch (*state)
+        {
+        case GAME_ON:
+            *state = GAME_MENU;
+            break;
 
-    // fixed size blocks per field
-    gameData->blockSize = SNAKE_SIZE * (float)gameData->gameField.width;
+        case GAME_OVER:
+        case GAME_SCREEN_FILLED:
+            break;
+
+        case GAME_SET_CONTROLS:
+            *state = GAME_MENU_SETTINGS;
+            break;
+
+        default:
+            *state = GAME_MENU;
+            break;
+        }
+    }
+}
+
+void ChangeSnakeWindowSize(const int resId)
+{
+    const int screenW = GetScreenWidth();
+
+    int newWidth;
+    int newHeight;
+    switch (resId)
+    {
+    case 0:
+        newWidth = 800;
+        newHeight = 600;
+        break;
+
+    case 1:
+        newWidth = 1280;
+        newHeight = 720;
+        break;
+
+    case 2:
+        newWidth = 1600;
+        newHeight = 900;
+        break;
+
+    case 3:
+        newWidth = 1920;
+        newHeight = 1080;
+        break;
+
+    default:
+        newWidth = screenW;
+        break;
+    }
+
+    if (screenW != newWidth)
+    {
+        // workaround, SetWindowSize gets unexpected results when in fullscreen
+        if (IsWindowFullscreen())
+        {
+            ToggleFullscreen();
+            SetWindowSize(newWidth, newHeight);
+            ToggleFullscreen();
+        }
+        else
+        {
+            SetWindowSize(newWidth, newHeight);
+        }
+    }
+}
+
+void InitGameData(GameData *gameData)
+{
+    gameData->blockSize = (float)GetScreenHeight() / SNAKE_SIZE;
+
+    // Init game field in the center of the screen
+    UpdateGameField(&gameData->gameField, gameData->blockSize);
+
+    // number of maximum snake blocks in the field
     gameData->maxBlocks =
-        ((int)gameData->gameField.width / gameData->blockSize) *
-        ((int)gameData->gameField.height / gameData->blockSize);
+        (int)(gameData->gameField.width / gameData->blockSize) *
+        (int)(gameData->gameField.height / gameData->blockSize);
 
     // Init array of all snake blocks
+    // destroyed when window closes
     gameData->snakeBlocks = MemAlloc(sizeof(SnakeBlock) * gameData->maxBlocks);
 
     // Init mutating gameplay values

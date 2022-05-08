@@ -18,6 +18,9 @@ int UpdateSnakePosition(Snake *snake, const float bounds[4],
                         const Rectangle *apple);
 bool UpdateSnakeDirection(Snake *snake, const Controls *controls);
 
+void UpdateResolution(GameData *gameData, GameMenu *gameMenu,
+                      SettingsMenu *settingsMenu, const int resolutionId);
+
 void EatApple(Rectangle *apple, Snake *snake, SnakeBlock *appleBlock);
 
 bool SnakeHitItself(const Snake *snake);

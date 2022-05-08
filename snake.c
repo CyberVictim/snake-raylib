@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "main.h"
+#include "menu.h"
 #include "raygui.h"
 #include "raylib.h"
 #include "snake.h"
@@ -226,6 +227,22 @@ void UpdateSnake(GameData *gameData)
 #endif // DEBUG
         }
     }
+}
+
+void UpdateResolution(GameData *gameData, GameMenu *gameMenu,
+                      SettingsMenu *settingsMenu, const int resolutionId)
+{
+    ChangeSnakeWindowSize(resolutionId);
+
+    gameData->blockSize = GetScreenHeight() / SNAKE_SIZE;
+    gameData->apple.height = gameData->apple.width = gameData->blockSize;
+    UpdateGameField(&gameData->gameField, gameData->blockSize);
+    gameData->blocksCounter = 0;
+    InitSnake(&gameData->snakePlayer, &gameData->gameField, gameData->blockSize,
+              &gameData->snakeBlocks[gameData->blocksCounter++]);
+
+    UpdateGameMenuButtons(gameMenu);
+    UpdateSettingsMenuButtons(settingsMenu);
 }
 
 void ResetGameData(GameData *gameData)

@@ -4,12 +4,18 @@
 #include "main.h"
 #include "raylib.h"
 
-void UpdateGameField(float screenW, float screenH, Rectangle *gameField,
-                     float field_size);
+void InitGameData(GameData *gameData);
+void UpdateGameField(Rectangle *gameField, const float snakeSize);
+
 int GetBounds(Rectangle rec, float buf[4]);
-void LogCheckGameRatios(int snakeSize, int gameFieldWidth);
-void InitGameData(GameData *gameData, float SCREEN_W, float SCREEN_H);
-void CheckExitInput(GameData *gameData);
 void AllocString(char **ptr, const char *msg);
+
+void LogCheckGameRatios(int snakeSize, int gameFieldWidth);
+
+void CheckExitInput(SnakeGameState *state, const KeyboardKey firstExitkey,
+                    const KeyboardKey lastExitKey);
+void CheckMenuInput(SnakeGameState *state);
+
+void ChangeSnakeWindowSize(const int resId);
 
 #endif // !UTILS_H_SNAKE

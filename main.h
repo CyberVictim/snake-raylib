@@ -34,10 +34,11 @@ extern int logIsAppleInSnake;
 
 // Numeric values
 #define MAX_FPS 60
-#define FIELD_SIZE 0.8f   // % of the screen
-#define SNAKE_SIZE 0.125f // % of the screen
-#define SNAKE_SPEED 1.0f  // time passed before snake moves in seconds
-#define APPLE_SPEED 8.0f  // time passed before new apple spawn in seconds
+#define SNAKE_SIZE                                                             \
+    12.0f            // screen height is divided by this to get snake block size
+#define FIELD_SIZE 8 // has to be int, multiply by snake block size
+#define SNAKE_SPEED 1.0f // time passed before snake moves in seconds
+#define APPLE_SPEED 8.0f // time passed before new apple spawn in seconds
 #define GET_APPLE_MAX_TRIES 100000 // max N of tries to get apple
 #define APPLE_SPEED_FIRST 0.2f     // in seconds
 #define INITIAL_GAME_STATE GAME_MENU
@@ -86,6 +87,7 @@ typedef struct Controls {
     KeyboardKey *changedKey;
 } Controls;
 
+// raygui button
 typedef struct ButtonSnake {
     Rectangle rec;
     char *name;

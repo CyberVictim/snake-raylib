@@ -4,14 +4,16 @@
 #include "main.h"
 #include "raylib.h"
 
-void InitSettingsMenu(SettingsMenu *settingsMenu, const int SCREEN_W,
-                      const int SCREEN_H);
-void UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData);
+void InitSettingsMenu(SettingsMenu *settingsMenu);
+void UpdateSettingsMenuButtons(SettingsMenu *menu);
+int UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData);
 
-void InitGameMenu(GameMenu *gameMenu, const int screenW, const int screenH);
+void InitGameMenu(GameMenu *gameMenu);
+void UpdateGameMenuButtons(GameMenu *menu);
 void UpdateDrawMenu(GameMenu *gameMenu, GameData *gameData);
 
 void FreeSettingsMenu(SettingsMenu *settingsMenu);
+void FreeGameMenu(GameMenu *gameMenu);
 
 void ReadUpdateControls(SnakeGameState *gameState, KeyboardKey *changedKey);
 
