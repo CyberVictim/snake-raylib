@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -134,6 +135,8 @@ void ChangeSnakeWindowSize(const int resId)
     }
 }
 
+// top level statements should be only called once,
+// inside functions can be called again to reset some values
 void InitGameData(GameData *gameData)
 {
     gameData->blockSize = (float)GetScreenHeight() / SNAKE_SIZE;
@@ -142,9 +145,19 @@ void InitGameData(GameData *gameData)
     UpdateGameField(&gameData->gameField, gameData->blockSize);
 
     // number of maximum snake blocks in the field
-    gameData->maxBlocks =
-        (int)(gameData->gameField.width / gameData->blockSize) *
-        (int)(gameData->gameField.height / gameData->blockSize);
+    // field width = height = blocksize * FIELD_SIZE
+    const size_t rows = FIELD_SIZE;
+    const size_t cols = rows;
+    gameData->maxBlocks = rows * cols;
+
+    // matrix of allowed apple positions
+    // bool matrix[rows][cols]
+    bool **matrix = malloc(sizeof(*matrix) * rows);
+    for (size_t i = 0; i < rows; ++i)
+    {
+        matrix[i] = malloc(sizeof(**matrix) * cols);
+    }
+    gameData->appleMatrix = matrix;
 
     // Init array of all snake blocks
     // destroyed when window closes

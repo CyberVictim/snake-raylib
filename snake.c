@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,7 +47,7 @@ bool IsRecInSnake(const Rectangle *rec, const Snake *snake)
     return false;
 }
 void InitSnake(Snake *snake, const Rectangle *gameField,
-               const int snakeBlockSize, SnakeBlock *snakeBlock)
+               const float snakeBlockSize, SnakeBlock *snakeBlock)
 {
     Rectangle body = {(gameField->x + gameField->width * 0.5f) - snakeBlockSize,
                       gameField->y + gameField->height - snakeBlockSize,

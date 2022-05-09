@@ -15,6 +15,7 @@
 
 #ifdef DEBUG
 int logIsAppleInSnake = 0;
+double timeToGetApple = 0;
 #endif // DEBUG
 
 int main(void)

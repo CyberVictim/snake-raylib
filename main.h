@@ -9,6 +9,7 @@
 #ifdef DEBUG
 
 extern int logIsAppleInSnake;
+extern double timeToGetApple;
 
 #endif // DEBUG
 
@@ -36,7 +37,7 @@ extern int logIsAppleInSnake;
 #define MAX_FPS 60
 #define SNAKE_SIZE                                                             \
     12.0f            // screen height is divided by this to get snake block size
-#define FIELD_SIZE 8 // has to be int, multiply by snake block size
+#define FIELD_SIZE 4 // has to be int, multiply by snake block size
 #define SNAKE_SPEED 1.0f // time passed before snake moves in seconds
 #define APPLE_SPEED 8.0f // time passed before new apple spawn in seconds
 #define GET_APPLE_MAX_TRIES 100000 // max N of tries to get apple
@@ -133,6 +134,7 @@ typedef struct GameData {
     Controls CONTROLS;
     bool appleActive;
     SnakeGameState GAME_STATE;
+    bool **appleMatrix;
     unsigned int gameSettingsFlags;
     unsigned short blocksCounter;
 } GameData;

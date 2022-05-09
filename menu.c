@@ -15,21 +15,8 @@ int UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData)
 
     ClearBackground(SNAKE_BACKGROUND_COLOR);
 
-    // if (GetKeyPressed() == KEY_ESCAPE)
-    // {
-    //     gameData->GAME_STATE = GAME_MENU;
-    // }
-
     // lock gui if dropdown box is active
     menu->changeResEditMode ? GuiLock() : GuiUnlock();
-    // if (menu->changeResEditMode)
-    // {
-    //     GuiLock();
-    // }
-    // else
-    // {
-    //     GuiUnlock();
-    // }
 
     GuiSetStyle(0, TEXT_SIZE, menu->fontSize);
     GuiGroupBox(menu->group.rec, menu->group.name);
@@ -57,7 +44,7 @@ int UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData)
         GuiCheckBox(menu->checkFullScreen.rec, menu->checkFullScreen.name,
                     menu->checkFullScreenBool);
 
-    // control change buttons will save the key being changed
+    // controls change buttons will save the key being changed
     // and change game state to controls set menu
     if (GuiButton(menu->setSnakeDown.rec, menu->setSnakeDown.name))
     {
@@ -125,7 +112,7 @@ int UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData)
 
 void UpdateSettingsMenuButtons(SettingsMenu *menu)
 {
-    const int SCREEN_W = GetScreenHeight();
+    const int SCREEN_W = GetScreenWidth();
     const int SCREEN_H = GetScreenHeight();
 
     menu->fontSize = (int)(SCREEN_H * 0.04f);

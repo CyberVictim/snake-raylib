@@ -8,7 +8,7 @@ void ResetGameData(GameData *gameData);
 void RestartGame(GameData *gameData);
 
 void InitSnake(Snake *snake, const Rectangle *gameField,
-               const int snakeBlockSize, SnakeBlock *snakeBlock);
+               const float snakeBlockSize, SnakeBlock *snakeBlock);
 
 void DrawSnake(Snake *snake, Color bodyColor, Color headColor);
 void DrawGame(GameData *gameData);
