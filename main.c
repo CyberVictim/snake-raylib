@@ -20,13 +20,13 @@ double timeToGetApple = 0;
 
 int main(void)
 {
-    // Config setup
-    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
     // Init window
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
     const short SCREEN_W = 800;
     const short SCREEN_H = 600;
     InitWindow(SCREEN_W, SCREEN_H, TITLE);
 
+    InitAudioDevice();
     SetTargetFPS(MAX_FPS);
     SetExitKey(0); // Remove exit key (esc by default)
 
@@ -56,10 +56,10 @@ int main(void)
     // Game loop
     while (!WindowShouldClose() && gameData.GAME_STATE != GAME_EXIT)
     {
-#ifdef DEBUG
+        #ifdef DEBUG
         DrawText(TextFormat("%dx%d", GetScreenWidth(), GetScreenHeight()), 15,
                  30, 10, BANANA);
-#endif // DEBUG
+        #endif // DEBUG
         CheckExitInput(&gameData.GAME_STATE, gameData.CONTROLS.exitKeyFirst,
                        gameData.CONTROLS.exitKeyLast);
         CheckMenuInput(&gameData.GAME_STATE);
@@ -120,8 +120,7 @@ int main(void)
     // Free resources
     FreeSettingsMenu(&settingsMenu);
     FreeGameMenu(&gameMenu);
-    MemFree(gameData.snakeBlocks);
-    free(gameData.alertMsg);
+    FreeGameData(&gameData);
 
     CloseWindow();
     return 0;

@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -8,29 +9,49 @@
 #include "snake.h"
 
 static bool GetApple(Rectangle *apple, const Rectangle *gameField,
-                     bool **matrix)
+                     const bool **matrix)
 {
-    bool result = false;
-    // Get range for possible fixed coordinates (0 to MAX)
-    float appleSize = apple->height;
-    int rangeX = gameField->width / appleSize - 1;
-    int rangeY = gameField->height / appleSize - 1;
+    bool foundApple = true;
 
-    // Get pseudo random fixed coordinate from range
-    SetRandomSeed(time(NULL));
-    int x = GetRandomValue(0, rangeX);
-    int y = GetRandomValue(0, rangeY);
-
-    // check if apple collides with snake
-    if (matrix[y][x])
+    // rows == cols
+    int rows = FIELD_SIZE;
+    Vector2 appleArray[rows * rows];
+    int appleIndex = 0;
+    // fill array with all possible apple coordinates
+    for (int y = 0; y < rows; ++y)
     {
+        for (int x = 0; x < rows; ++x)
+        {
+            if (matrix[y][x])
+            {
+                appleArray[appleIndex].y = y;
+                appleArray[appleIndex].x = x;
+                appleIndex++;
+            }
+        }
+    }
+    --appleIndex; // remove unused index;
+
+    // no place for apple
+    // only happens if bool matrix is all false,
+    if (appleIndex < 0)
+    {
+        foundApple = false;
+    }
+    else
+    {
+        SetRandomSeed(time(NULL));
+        int rndIndex = GetRandomValue(0, appleIndex);
+        int y = appleArray[rndIndex].y;
+        int x = appleArray[rndIndex].x;
+
         // Calculate actual screen coordinate
+        float appleSize = apple->height;
         apple->x = x * appleSize + gameField->x;
         apple->y = y * appleSize + gameField->y;
-        result = true;
     }
 
-    return result;
+    return foundApple;
 }
 
 void UpdateApple(GameData *gameData)
@@ -41,47 +62,39 @@ void UpdateApple(GameData *gameData)
     if ((gameData->dtApple >= APPLE_SPEED &&
          gameData->GAME_STATE != GAME_SCREEN_FILLED))
     {
-        // pause time if we don't find apple in this frame
-        gameData->dtApple = APPLE_SPEED - 0.1f;
-        bool isAppleValid = false;
-        gameData->appleActive = false;
 
-#ifdef DEBUG
+        #ifdef DEBUG
         double oldTime = GetTime();
-#endif // DEBUG
+        #endif // DEBUG
 
         // update matrix with the position of snake
         UpdateAppleMatrix(gameData->appleMatrix, &gameData->snakePlayer,
                           &gameData->gameField);
 
         // get random position and check with the matrix
-        // limit the calculation by max N tries per cycle
-        for (int i = 0; i < GET_APPLE_MAX_TRIES; i++)
+        if (GetApple(&gameData->apple, &gameData->gameField,
+                    gameData->appleMatrix))
         {
-            isAppleValid = GetApple(&gameData->apple, &gameData->gameField,
-                                    gameData->appleMatrix);
-            if (isAppleValid)
-            {
-                gameData->dtApple = 0.0f;
-                gameData->appleActive = true;
-#ifdef DEBUG
-                printf("apple found");
-#endif // DEBUG
-                break;
-            }
+            gameData->dtApple = 0.0f;
+            gameData->appleActive = true;
+            #ifdef DEBUG
+            printf("apple found");
+            #endif // DEBUG
         }
-#ifdef DEBUG
+        else
+        {
+            gameData->dtApple = APPLE_SPEED - 0.1f;
+            gameData->appleActive = false;
+        }
+        #ifdef DEBUG
         timeToGetApple = GetTime() - oldTime;
         printf("%f\n", timeToGetApple);
-
-        // printf("IsAppleInSnake calls - %d\n", logIsAppleInSnake);
-        // logIsAppleInSnake = 0;
-#endif // DEBUG
+        #endif // DEBUG
     }
 }
 
 // mark snake coordinates with false
-// in the matrix
+// in the bool matrix
 void UpdateAppleMatrix(bool **appleMatrix, const Snake *snake,
                        const Rectangle *field)
 {

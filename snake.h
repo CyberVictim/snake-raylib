@@ -6,11 +6,12 @@
 
 void ResetGameData(GameData *gameData);
 void RestartGame(GameData *gameData);
+void FreeGameData(GameData *gameData);
 
 void InitSnake(Snake *snake, const Rectangle *gameField,
                const float snakeBlockSize, SnakeBlock *snakeBlock);
 
-void DrawSnake(Snake *snake, Color bodyColor, Color headColor);
+void DrawSnake(Snake *snake, Color bodyColor, Color headColor,const Texture2D *headTex, const Texture2D *bodyTex);
 void DrawGame(GameData *gameData);
 
 void UpdateSnake(GameData *gameData);

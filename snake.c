@@ -49,7 +49,7 @@ bool IsRecInSnake(const Rectangle *rec, const Snake *snake)
 void InitSnake(Snake *snake, const Rectangle *gameField,
                const float snakeBlockSize, SnakeBlock *snakeBlock)
 {
-    Rectangle body = {(gameField->x + gameField->width * 0.5f) - snakeBlockSize,
+    Rectangle body = {gameField->x,
                       gameField->y + gameField->height - snakeBlockSize,
                       snakeBlockSize, snakeBlockSize};
     *snakeBlock = (SnakeBlock){body, NULL};
@@ -174,17 +174,25 @@ void EatApple(Rectangle *apple, Snake *snake, SnakeBlock *appleBlock)
     snake->head = appleBlock;
 }
 
-void DrawSnake(Snake *snake, Color bodyColor, Color headColor)
+void DrawSnake(Snake *snake, Color bodyColor, Color headColor,
+               const Texture2D *headTex, const Texture2D *bodyTex)
 {
+
     // Start from tail if more than one block, otherwise just draw head
     SnakeBlock *block =
         (snake->head == snake->tail ? snake->head : snake->tail);
     while (block)
     {
-        DrawRectangleRec(block->body, bodyColor);
+        // DrawRectangleRec(block->body, (Color){0, 0, 0, 0});
+        DrawTextureEx(*bodyTex, (Vector2){block->body.x, block->body.y}, 0.0f,
+                      block->body.height / bodyTex->height,
+                      (Color){255, 255, 255, 255});
         block = block->next;
     }
-    DrawRectangleRec(snake->head->body, headColor);
+    // DrawRectangleRec(snake->head->body, (Color){0, 0, 0, 0});
+    DrawTextureEx(*headTex, (Vector2){snake->head->body.x, snake->head->body.y},
+                  0.0f, snake->head->body.height / headTex->height,
+                  (Color){255, 255, 255, 255});
 }
 
 // Update snakePlayer
@@ -219,13 +227,20 @@ void UpdateSnake(GameData *gameData)
 
             gameData->appleActive = false;
             gameData->dtApple = APPLE_SPEED - APPLE_SPEED_FIRST;
+
+            PlaySound(gameData->dxApple);
         }
-        if (SnakeHitItself(&gameData->snakePlayer))
+        else if (SnakeHitItself(&gameData->snakePlayer))
         {
             gameData->GAME_STATE = GAME_OVER;
 #ifdef DEBUG
             printf("game over\n");
 #endif // DEBUG
+            PlaySound(gameData->fxLoss);
+        }
+        else
+        {
+            PlaySound(gameData->fxMove);
         }
     }
 }
@@ -237,6 +252,7 @@ void UpdateResolution(GameData *gameData, GameMenu *gameMenu,
 
     gameData->blockSize = GetScreenHeight() / SNAKE_SIZE;
     gameData->apple.height = gameData->apple.width = gameData->blockSize;
+    gameData->appleActive = false;
     UpdateGameField(&gameData->gameField, gameData->blockSize);
     gameData->blocksCounter = 0;
     InitSnake(&gameData->snakePlayer, &gameData->gameField, gameData->blockSize,
@@ -259,24 +275,47 @@ void ResetGameData(GameData *gameData)
               &gameData->snakeBlocks[gameData->blocksCounter++]);
 }
 
+void FreeGameData(GameData *gameData)
+{
+    free(gameData->snakeBlocks);
+    free(gameData->alertMsg);
+    // unload textures
+    UnloadTexture(gameData->snakeBodyTex);
+    UnloadTexture(gameData->snakeHeadTex);
+    // unload sounds
+    UnloadSound(gameData->dxApple);
+    UnloadSound(gameData->fxMove);
+    UnloadSound(gameData->fxLoss);
+
+    // rows = cols
+    size_t rows = FIELD_SIZE;
+    for (size_t i = 0; i < rows; ++i)
+    {
+        free(gameData->appleMatrix[i]);
+    }
+    free(gameData->appleMatrix);
+}
+
 void DrawGame(GameData *gameData)
 {
     BeginDrawing();
-
-    // if (gameData->gameSettingsFlags & SET_SNAKE_SHOW_FPS)
-    // {
-    //     DrawFPS(15, 15);
-    // }
 
     switch (gameData->GAME_STATE)
     {
     case GAME_ON:
         ClearBackground(SNAKE_BACKGROUND_COLOR);
         DrawRectangleRec(gameData->gameField, SOFT_GREEN);
-        DrawSnake(&gameData->snakePlayer, SNAKE_BODY_COLOR, SNAKE_HEAD_COLOR);
+        DrawSnake(&gameData->snakePlayer, SNAKE_BODY_COLOR, SNAKE_HEAD_COLOR,
+                  &gameData->snakeHeadTex, &gameData->snakeBodyTex);
 
         if (gameData->appleActive)
-            DrawRectangleRec(gameData->apple, BANANA);
+        {
+            // DrawRectangleRec(gameData->apple, BANANA);
+            DrawTextureEx(gameData->appleTex,
+                          (Vector2){gameData->apple.x, gameData->apple.y}, 0.0f,
+                          gameData->apple.height / gameData->appleTex.height,
+                          SOFT_RED);
+        }
         break;
 
     case GAME_MENU:

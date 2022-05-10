@@ -139,6 +139,15 @@ void ChangeSnakeWindowSize(const int resId)
 // inside functions can be called again to reset some values
 void InitGameData(GameData *gameData)
 {
+    // load textures
+    gameData->snakeHeadTex = LoadTexture("resources/snake_head.png");
+    gameData->snakeBodyTex = LoadTexture("resources/snake_body.png");
+    gameData->appleTex = LoadTexture("resources/apple.png");
+    // load sound effects
+    gameData->fxMove = LoadSound("resources/fx/move_fx.wav");
+    gameData->dxApple = LoadSound("resources/fx/apple_fx.wav");
+    gameData->fxLoss = LoadSound("resources/fx/loss_fx.mp3");
+
     gameData->blockSize = (float)GetScreenHeight() / SNAKE_SIZE;
 
     // Init game field in the center of the screen
