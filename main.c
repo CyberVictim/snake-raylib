@@ -74,14 +74,15 @@ int main(void)
             UpdateDrawMenu(&gameMenu, &gameData);
             break;
 
-        case GAME_MENU_SETTINGS:
+        case GAME_MENU_SETTINGS: {
             int resolutionId = UpdateDrawMenuSettings(&settingsMenu, &gameData);
             if (resolutionId > -1)
             {
                 UpdateResolution(&gameData, &gameMenu, &settingsMenu,
                                  resolutionId);
             }
-            break;
+        }
+        break;
 
         case GAME_SET_CONTROLS:
             ReadUpdateControls(&gameData.GAME_STATE,
