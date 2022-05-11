@@ -45,7 +45,6 @@ int main(void)
 
     // GameData
     GameData gameData;
-    gameData.alertMsg = NULL;
     InitGameData(&gameData);
 
 #ifdef DEBUG
@@ -56,10 +55,10 @@ int main(void)
     // Game loop
     while (!WindowShouldClose() && gameData.GAME_STATE != GAME_EXIT)
     {
-        #ifdef DEBUG
+#ifdef DEBUG
         DrawText(TextFormat("%dx%d", GetScreenWidth(), GetScreenHeight()), 15,
                  30, 10, BANANA);
-        #endif // DEBUG
+#endif // DEBUG
         CheckExitInput(&gameData.GAME_STATE, gameData.CONTROLS.exitKeyFirst,
                        gameData.CONTROLS.exitKeyLast);
         CheckMenuInput(&gameData.GAME_STATE);
@@ -90,17 +89,17 @@ int main(void)
             break;
 
         case GAME_OVER:
-            if (gameData.alertMsg == NULL)
+            if (gameData.gameOverMsg == NULL)
             {
-                AllocString(&gameData.alertMsg, "GAME OVER!");
+                AllocString(&gameData.gameOverMsg, "GAME OVER!");
             }
             DrawGame(&gameData);
             break;
 
         case GAME_SCREEN_FILLED:
-            if (gameData.alertMsg == NULL)
+            if (gameData.gameOverMsg == NULL)
             {
-                AllocString(&gameData.alertMsg, "GAME SCREEN FILLED!");
+                AllocString(&gameData.gameOverMsg, "GAME SCREEN FILLED!");
             }
             DrawGame(&gameData);
             break;
@@ -115,6 +114,8 @@ int main(void)
             break;
 #endif // !DEBUG
         }
+        // draw alert if have any
+        AlertWithTimer(&gameData.alertMsg, GetFrameTime(), 3.0f);
     }
 
     // Free resources

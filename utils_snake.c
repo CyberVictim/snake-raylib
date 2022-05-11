@@ -9,6 +9,8 @@
 #include "snake.h"
 #include "utils_snake.h"
 
+#include "raygui.h" // GuiStatusBar
+
 // Relative to the screen
 void UpdateGameField(Rectangle *gameField, const float snakeSize)
 {
@@ -135,10 +137,31 @@ void ChangeSnakeWindowSize(const int resId)
     }
 }
 
+void AlertWithTimer(char **msg, const float frameTime, const float alertTime)
+{
+    static float timer = 0;
+    timer += frameTime;
+    if (timer < alertTime && *msg)
+    {
+        float height = 30;
+        GuiStatusBar(
+            (Rectangle){0, GetScreenHeight() - height, GetScreenWidth(), height}, *msg);
+    }
+    else
+    {
+        free(*msg);
+        *msg = NULL;
+        timer = 0;
+    }
+}
+
 // top level statements should be only called once,
 // inside functions can be called again to reset some values
 void InitGameData(GameData *gameData)
 {
+    gameData->gameOverMsg = NULL;
+    gameData->alertMsg = NULL;
+
     // load textures
     gameData->snakeHeadTex = LoadTexture("resources/snake_head.png");
     gameData->snakeBodyTex = LoadTexture("resources/snake_body.png");
@@ -172,14 +195,13 @@ void InitGameData(GameData *gameData)
     // destroyed when window closes
     gameData->snakeBlocks = MemAlloc(sizeof(SnakeBlock) * gameData->maxBlocks);
 
-    // Init mutating gameplay values
     ResetGameData(gameData);
 
     gameData->apple =
         (Rectangle){0.0f, 0.0f, gameData->blockSize, gameData->blockSize};
 
     // init game default settings
-    unsigned int defaultGameSettings = SET_SNAKE_SHOW_FPS;
+    unsigned int defaultGameSettings = 0;
     gameData->gameSettingsFlags = defaultGameSettings;
 
     // Init default controls

@@ -33,19 +33,7 @@ bool SnakeHitItself(const Snake *snake)
     }
     return false;
 }
-bool IsRecInSnake(const Rectangle *rec, const Snake *snake)
-{
-    SnakeBlock *block = snake->tail;
-    while (block)
-    {
-        if (rec->x == block->body.x && rec->y == block->body.y)
-        {
-            return true;
-        }
-        block = block->next;
-    }
-    return false;
-}
+
 void InitSnake(Snake *snake, const Rectangle *gameField,
                const float snakeBlockSize, SnakeBlock *snakeBlock)
 {
@@ -264,7 +252,9 @@ void UpdateResolution(GameData *gameData, GameMenu *gameMenu,
 
 void ResetGameData(GameData *gameData)
 {
+    free(gameData->gameOverMsg);
     free(gameData->alertMsg);
+    gameData->gameOverMsg = NULL;
     gameData->alertMsg = NULL;
     gameData->GAME_STATE = INITIAL_GAME_STATE;
     gameData->appleActive = false;
@@ -278,6 +268,7 @@ void ResetGameData(GameData *gameData)
 void FreeGameData(GameData *gameData)
 {
     free(gameData->snakeBlocks);
+    free(gameData->gameOverMsg);
     free(gameData->alertMsg);
     // unload textures
     UnloadTexture(gameData->snakeBodyTex);
@@ -318,15 +309,12 @@ void DrawGame(GameData *gameData)
         }
         break;
 
-    case GAME_MENU:
-        break;
-
     case GAME_OVER:
     case GAME_SCREEN_FILLED:
         ClearBackground(GetColor(BROWN_COLOR_S_HEX));
 
         float bigFontSize = gameData->gameField.height * 0.1f;
-        DrawText(gameData->alertMsg, gameData->gameField.width * 0.2f, 20,
+        DrawText(gameData->gameOverMsg, gameData->gameField.width * 0.2f, 20,
                  bigFontSize, BANANA);
 
         DrawText("Press ENTER to restart, ESCAPE for menu", 20,

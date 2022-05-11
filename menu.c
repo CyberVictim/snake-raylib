@@ -1,10 +1,11 @@
 #include "menu.h"
-#include "raygui.h"
 #include "raylib.h"
 #include "utils_snake.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "raygui.h" // GuiStatusBar
 
 int UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData)
 {
@@ -26,15 +27,14 @@ int UpdateDrawMenuSettings(SettingsMenu *menu, GameData *gameData)
 
     if (GuiButton(menu->changeResolution.rec, menu->changeResolution.name))
     {
-        // format the string with the button name
-        char msg[] =
-            "Choose resolution from dropdown and to save press the button ";
-        char statusMsg[strlen(msg) + strlen(menu->save.name) + 1];
-        sprintf(statusMsg, "%s%s", msg, menu->save.name);
-
-        GuiStatusBar(
-            (Rectangle){0, GetScreenHeight() - 20, GetScreenWidth(), 20},
-            statusMsg);
+        if (!gameData->alertMsg)
+        {
+            char *msg;
+            AllocString(&msg, TextFormat("Choose resolution from dropdown and "
+                                         "press the button\"%s\"",
+                                         menu->save.name));
+            gameData->alertMsg = msg;
+        }
     }
 
     menu->checkFPSBool = GuiCheckBox(menu->checkFPS.rec, menu->checkFPS.name,

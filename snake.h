@@ -25,6 +25,5 @@ void UpdateResolution(GameData *gameData, GameMenu *gameMenu,
 void EatApple(Rectangle *apple, Snake *snake, SnakeBlock *appleBlock);
 
 bool SnakeHitItself(const Snake *snake);
-bool IsRecInSnake(const Rectangle *rec, const Snake *snake);
 
 #endif // !SNAKE_H_SNAKE

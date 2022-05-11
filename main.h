@@ -4,7 +4,7 @@
 #include "raylib.h"
 
 /* --- DEBUG --- */
-#define DEBUG // Include debug code
+// #define DEBUG // Include debug code
 
 #ifdef DEBUG
 
@@ -123,6 +123,7 @@ typedef struct SettingsMenu {
 } SettingsMenu;
 
 typedef struct GameData {
+    char *gameOverMsg;
     char *alertMsg;
     float dtSnake;
     float dtApple;

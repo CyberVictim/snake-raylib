@@ -11,6 +11,7 @@ int GetBounds(Rectangle rec, float buf[4]);
 void AllocString(char **ptr, const char *msg);
 
 void LogCheckGameRatios(int snakeSize, int gameFieldWidth);
+void AlertWithTimer(char **msg, const float frameTime, const float alertTime);
 
 void CheckExitInput(SnakeGameState *state, const KeyboardKey firstExitkey,
                     const KeyboardKey lastExitKey);
